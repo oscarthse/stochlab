@@ -1,5 +1,5 @@
 from .core import StateSpace, State, Path, SimulationResult, StochasticProcess
-# from .models import MarkovChain  # TODO: Uncomment when implemented
+from .models import MarkovChain
 
 __all__ = [
     "StateSpace",
@@ -7,5 +7,5 @@ __all__ = [
     "Path",
     "SimulationResult",
     "StochasticProcess",
-    # "MarkovChain",  # TODO: Uncomment when implemented
+    "MarkovChain",
 ]

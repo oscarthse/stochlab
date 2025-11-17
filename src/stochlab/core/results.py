@@ -70,7 +70,9 @@ class SimulationResult:
         records: list[dict[str, Any]] = []
         for path_id, path in enumerate(self.paths):
             # rely on Path guarantees: times and states have same length
-            for t_idx, (time_value, state) in enumerate(zip(path.times, path.states, strict=True)):
+            for t_idx, (time_value, state) in enumerate(
+                zip(path.times, path.states, strict=True)
+            ):
                 records.append(
                     {
                         "path_id": path_id,

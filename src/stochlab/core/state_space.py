@@ -12,39 +12,51 @@ State = Hashable
 @dataclass(frozen=True, slots=True)
 class StateSpace:
     """
-    Finite set of states with a stable index mapping.
+    Finite state space S = {s₀, s₁, ..., sₙ₋₁} with bijective label ↔ index mapping.
 
-    This class provides a clean bridge between *labels* (e.g. "A", "BBB",
-    ("bull", "high-vol"), Enums, etc.) and *integer indices* 0, 1, ..., n-1.
+    Provides the foundation for all discrete-time stochastic processes by managing
+    the finite set of possible states and their integer representations.
 
-    It is:
+    Parameters
+    ----------
+    states : Sequence[State]
+        Ordered sequence of unique state labels (any hashable type).
 
-    - Finite: only a fixed, finite list of states is allowed.
-    - Unique: all states must be distinct (no duplicates).
-    - Immutable: once created, states and indices cannot change.
+    Attributes
+    ----------
+    states : Sequence[State]
+        The ordered state labels.
+    index_map : Mapping[State, int]
+        Read-only mapping from state label to integer index.
+    n_states : int
+        Number of states (alias for len(states)).
 
     Examples
     --------
-    >>> ss = StateSpace(states=["A", "B", "C"])
+    Basic usage:
+
+    >>> ss = StateSpace(["Bull", "Bear", "Sideways"])
     >>> len(ss)
     3
-    >>> ss.index("B")
+    >>> ss.index("Bear")
     1
-    >>> ss.state(2)
-    'C'
-    >>> "A" in ss
+    >>> ss.state(0)
+    'Bull'
+    >>> "Bull" in ss
     True
-    >>> "Z" in ss
-    False
 
-    Notes
-    -----
-    The order of `states` defines the indexing:
-    - states[0] has index 0
-    - states[1] has index 1
-    - ...
-    This ordering will be used to index rows/columns of transition matrices
-    in Markov chain models.
+    Complex state types:
+
+    >>> market_states = StateSpace([("Bull", "High"), ("Bull", "Low"), ("Bear", "High")])
+    >>> market_states.index(("Bear", "High"))
+    2
+
+    Mathematical Context
+    --------------------
+    For a stochastic process (Xₜ)ₜ₌₀ᵀ, this class defines:
+    - State space: S = {s₀, s₁, ..., sₙ₋₁}
+    - Bijection: φ: S → {0, 1, ..., n-1}
+    - Used for transition matrix indexing: P[i,j] = P(Xₜ₊₁ = sⱼ | Xₜ = sᵢ)
     """
 
     # Ordered sequence of states (labels). Must be unique.

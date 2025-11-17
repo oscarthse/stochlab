@@ -18,8 +18,7 @@ def test_markov_chain_deterministic_alternation():
     Starting from "A", the chain alternates A, B, A, B, ...
     """
     ss = StateSpace(states=["A", "B"])
-    P = np.array([[0.0, 1.0],
-                  [1.0, 0.0]])
+    P = np.array([[0.0, 1.0], [1.0, 0.0]])
 
     mc = MarkovChain(state_space=ss, P=P)
 
@@ -40,8 +39,7 @@ def test_markov_chain_from_transition_matrix_absorbing():
     B -> B with prob 1
     """
     states = ["A", "B"]
-    P = np.array([[1.0, 0.0],
-                  [0.0, 1.0]])
+    P = np.array([[1.0, 0.0], [0.0, 1.0]])
 
     mc = MarkovChain.from_transition_matrix(states=states, P=P)
 
@@ -55,8 +53,9 @@ def test_markov_chain_from_transition_matrix_absorbing():
 def test_markov_chain_invalid_P_shape_raises():
     """P must be a square matrix with shape (n_states, n_states)."""
     ss = StateSpace(states=["A", "B"])
-    bad_P = np.array([[0.5, 0.5, 0.0],
-                      [0.3, 0.7, 0.0]])  # shape (2, 3) instead of (2, 2)
+    bad_P = np.array(
+        [[0.5, 0.5, 0.0], [0.3, 0.7, 0.0]]
+    )  # shape (2, 3) instead of (2, 2)
 
     with pytest.raises(ValueError, match="must have shape"):
         MarkovChain(state_space=ss, P=bad_P)
@@ -66,8 +65,7 @@ def test_markov_chain_invalid_P_rowsum_raises():
     """Each row of P must sum to 1."""
     ss = StateSpace(states=["A", "B"])
     # rows do not sum to 1
-    bad_P = np.array([[0.5, 0.4],   # sums to 0.9
-                      [0.3, 0.3]])  # sums to 0.6
+    bad_P = np.array([[0.5, 0.4], [0.3, 0.3]])  # sums to 0.9  # sums to 0.6
 
     with pytest.raises(ValueError, match="Each row of P must sum to 1"):
         MarkovChain(state_space=ss, P=bad_P)
@@ -76,8 +74,7 @@ def test_markov_chain_invalid_P_rowsum_raises():
 def test_markov_chain_invalid_initial_dist_length_raises():
     """initial_dist must have length equal to number of states."""
     ss = StateSpace(states=["A", "B"])
-    P = np.array([[0.5, 0.5],
-                  [0.5, 0.5]])
+    P = np.array([[0.5, 0.5], [0.5, 0.5]])
     bad_init = np.array([1.0, 0.0, 0.0])  # wrong length
 
     with pytest.raises(ValueError, match="initial_dist must have shape"):
@@ -87,8 +84,7 @@ def test_markov_chain_invalid_initial_dist_length_raises():
 def test_markov_chain_invalid_initial_dist_sum_raises():
     """initial_dist must sum to 1."""
     ss = StateSpace(states=["A", "B"])
-    P = np.array([[0.5, 0.5],
-                  [0.5, 0.5]])
+    P = np.array([[0.5, 0.5], [0.5, 0.5]])
     bad_init = np.array([0.7, 0.7])  # sums to 1.4
 
     with pytest.raises(ValueError, match="initial_dist must sum to 1"):
@@ -103,8 +99,7 @@ def test_markov_chain_sampling_uses_initial_dist_when_x0_none():
     and the initial state is consistent with the support of initial_dist.
     """
     ss = StateSpace(states=["A", "B"])
-    P = np.array([[0.5, 0.5],
-                  [0.5, 0.5]])
+    P = np.array([[0.5, 0.5], [0.5, 0.5]])
     # Only "B" has positive probability in initial_dist
     init = np.array([0.0, 1.0])
 

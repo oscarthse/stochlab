@@ -1,4 +1,4 @@
-.PHONY: help install dev test test-verbose clean format lint typecheck all-checks
+.PHONY: help install dev test test-verbose clean format lint typecheck all-checks docs docs-clean docs-serve
 
 # Default target
 help:
@@ -11,6 +11,8 @@ help:
 	@echo "  lint         - Lint code with ruff"
 	@echo "  typecheck    - Type check with mypy"
 	@echo "  all-checks   - Run lint, typecheck, and tests"
+	@echo "  docs         - Build documentation"
+	@echo "  docs-serve   - Build and serve documentation locally"
 	@echo "  clean        - Remove build artifacts and caches"
 
 # Install all deps (main + dev) according to pyproject.toml
@@ -46,10 +48,21 @@ typecheck:
 all-checks: lint typecheck test
 	@echo "✅ All checks passed!"
 
+# Documentation
+docs:
+	uv run --extra docs sphinx-build -b html docs docs/_build/html
+
+docs-clean:
+	rm -rf docs/_build
+
+docs-serve: docs
+	python -m http.server 8000 --directory docs/_build/html
+
 # Cleanup
 clean:
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
+	rm -rf docs/_build/
 	find . -type d -name "__pycache__" -exec rm -rf {} +
 	find . -type f -name "*.pyc" -delete

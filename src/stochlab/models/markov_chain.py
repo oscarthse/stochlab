@@ -49,9 +49,7 @@ class MarkovChain(StochasticProcess):
             raise ValueError("Transition matrix P must be 2D.")
 
         if self.P.shape != (n, n):
-            raise ValueError(
-                f"P must have shape ({n}, {n}), got {self.P.shape}."
-            )
+            raise ValueError(f"P must have shape ({n}, {n}), got {self.P.shape}.")
 
         # Convert to float and validate rows
         P = np.asarray(self.P, dtype=float)

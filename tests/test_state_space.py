@@ -8,12 +8,12 @@ from stochlab.core import StateSpace
 def test_state_space_basic():
     """Test basic StateSpace functionality."""
     ss = StateSpace(states=["A", "B", "C"])
-    
+
     assert len(ss) == 3
     assert ss.n_states == 3
     assert "A" in ss
     assert "Z" not in ss
-    
+
     assert ss.index("A") == 0
     assert ss.index("B") == 1
     assert ss.state(0) == "A"
@@ -30,11 +30,11 @@ def test_state_space_validation():
 def test_state_space_errors():
     """Test StateSpace error handling."""
     ss = StateSpace(states=["A", "B"])
-    
+
     # Unknown state should raise KeyError
     with pytest.raises(KeyError, match="Unknown state"):
         ss.index("Z")
-    
+
     # Out of range index should raise IndexError
     with pytest.raises(IndexError, match="State index out of range"):
         ss.state(5)

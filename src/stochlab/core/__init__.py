@@ -7,7 +7,7 @@ from .state_space import State, StateSpace
 
 __all__ = [
     "State",
-    "StateSpace", 
+    "StateSpace",
     "Path",
     "StochasticProcess",
     "SimulationResult",
