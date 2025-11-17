@@ -8,3 +8,22 @@ wheels/
 
 # Virtual environments
 .venv
+
+.amazonq
+
+
+# pytest
+.pytest_cache/
+
+# Coverage
+.coverage
+.coverage.*
+htmlcov/
+# Virtual envs
+.venv/
+venv/
+env/
+.env/
+
+# Python version managers
+.python-version
