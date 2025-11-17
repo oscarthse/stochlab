@@ -1,0 +1,10 @@
+[project]
+name = "stochlab"
+version = "0.1.0"
+description = "Discrete-time stochastic processes, Monte Carlo, analytics, and reporting."
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+  "numpy>=1.26",
+  "pandas>=2.0",
+]
