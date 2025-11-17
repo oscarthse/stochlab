@@ -27,3 +27,4 @@ env/
 
 # Python version managers
 .python-version
+.ruff_cache
