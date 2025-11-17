@@ -1,0 +1,417 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stochlab – Developer Guide &mdash; stochlab 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            stochlab
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_reference.html">Quick Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stochlab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">stochlab – Developer Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/DEVGUIDE.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="stochlab-developer-guide">
+<h1>stochlab – Developer Guide<a class="headerlink" href="#stochlab-developer-guide" title="Link to this heading"></a></h1>
+<p>This document describes how to work on <strong>stochlab</strong> in a clean, consistent way:</p>
+<ul class="simple">
+<li><p>Git/GitHub workflow</p></li>
+<li><p>When and how to write tests</p></li>
+<li><p>Documentation expectations</p></li>
+<li><p>Code quality tools (<code class="docutils literal notranslate"><span class="pre">black</span></code>, <code class="docutils literal notranslate"><span class="pre">ruff</span></code>, <code class="docutils literal notranslate"><span class="pre">mypy</span></code>, <code class="docutils literal notranslate"><span class="pre">pytest</span></code>)</p></li>
+</ul>
+<hr class="docutils" />
+<section id="git-branching-workflow">
+<h2>1. Git &amp; Branching Workflow<a class="headerlink" href="#git-branching-workflow" title="Link to this heading"></a></h2>
+<p><strong>Main rules:</strong></p>
+<p><code class="docutils literal notranslate"><span class="pre">main</span></code> must always be:</p>
+<ul class="simple">
+<li><p>✅ Installable</p></li>
+<li><p>✅ Tests passing</p></li>
+<li><p>✅ No obviously broken APIs</p></li>
+</ul>
+<section id="branches">
+<h3>1.1 Branches<a class="headerlink" href="#branches" title="Link to this heading"></a></h3>
+<p>For any non-trivial change, use a feature branch:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>feature/markov-chain-from-sequences
+<span class="c1"># or</span>
+git<span class="w"> </span>checkout<span class="w"> </span>-b<span class="w"> </span>fix/state-space-bug
+</pre></div>
+</div>
+<p><strong>Keep branches small and focused:</strong></p>
+<ul class="simple">
+<li><p>One feature / refactor / bugfix per branch</p></li>
+</ul>
+</section>
+<section id="commit-style">
+<h3>1.2 Commit Style<a class="headerlink" href="#commit-style" title="Link to this heading"></a></h3>
+<p>Aim for small, logical commits:</p>
+<ul class="simple">
+<li><p>Each commit should represent one coherent change</p></li>
+</ul>
+<p><strong>Suggested format:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">type</span><span class="p">:</span> <span class="n">short</span> <span class="n">description</span>
+
+<span class="p">[</span><span class="n">optional</span> <span class="n">longer</span> <span class="n">explanation</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Examples:</strong></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">feat</span><span class="p">:</span> <span class="n">add</span> <span class="n">MarkovChain</span><span class="o">.</span><span class="n">from_transition_matrix</span>
+<span class="n">test</span><span class="p">:</span> <span class="n">add</span> <span class="n">unit</span> <span class="n">tests</span> <span class="k">for</span> <span class="n">SimulationResult</span><span class="o">.</span><span class="n">state_distribution</span>
+<span class="n">refactor</span><span class="p">:</span> <span class="n">simplify</span> <span class="n">Path</span> <span class="n">__post_init__</span> <span class="n">validation</span>
+<span class="n">fix</span><span class="p">:</span> <span class="n">handle</span> <span class="n">empty</span> <span class="n">sequences</span> <span class="ow">in</span> <span class="n">from_sequences</span>
+</pre></div>
+</div>
+<p><strong>Avoid</strong> huge “mixed” commits (docs + refactor + new features all in one).</p>
+</section>
+<section id="pull-requests-even-if-it-s-just-you">
+<h3>1.3 Pull Requests (even if it’s just you)<a class="headerlink" href="#pull-requests-even-if-it-s-just-you" title="Link to this heading"></a></h3>
+<p>When using GitHub:</p>
+<ol class="arabic simple">
+<li><p>Open a PR from <code class="docutils literal notranslate"><span class="pre">feature/...</span></code> → <code class="docutils literal notranslate"><span class="pre">main</span></code></p></li>
+<li><p>In the PR description include:</p>
+<ul class="simple">
+<li><p>What you changed</p></li>
+<li><p>Why you changed it</p></li>
+<li><p>Any breaking changes / TODOs</p></li>
+</ul>
+</li>
+<li><p>Use the PR checklist from section 6 before merging</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="testing-protocol-pytest">
+<h2>2. Testing Protocol (pytest)<a class="headerlink" href="#testing-protocol-pytest" title="Link to this heading"></a></h2>
+<section id="where-tests-live">
+<h3>2.1 Where Tests Live<a class="headerlink" href="#where-tests-live" title="Link to this heading"></a></h3>
+<p>All tests go in <code class="docutils literal notranslate"><span class="pre">tests/</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tests</span><span class="o">/</span><span class="n">test_state_space</span><span class="o">.</span><span class="n">py</span>
+<span class="n">tests</span><span class="o">/</span><span class="n">test_path</span><span class="o">.</span><span class="n">py</span>
+<span class="n">tests</span><span class="o">/</span><span class="n">test_results</span><span class="o">.</span><span class="n">py</span>
+<span class="n">tests</span><span class="o">/</span><span class="n">test_markov_chain</span><span class="o">.</span><span class="n">py</span>
+<span class="n">tests</span><span class="o">/</span><span class="n">test_core_integration</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p><strong>Naming convention:</strong></p>
+<ul class="simple">
+<li><p><strong>File:</strong> <code class="docutils literal notranslate"><span class="pre">test_&lt;module_or_feature&gt;.py</span></code></p></li>
+<li><p><strong>Functions:</strong> <code class="docutils literal notranslate"><span class="pre">test_&lt;something_descriptive&gt;()</span></code></p></li>
+</ul>
+</section>
+<section id="when-to-write-update-tests">
+<h3>2.2 When to Write/Update Tests<a class="headerlink" href="#when-to-write-update-tests" title="Link to this heading"></a></h3>
+<p>Always add or update tests when:</p>
+<ul class="simple">
+<li><p>You add a new core class or method (MarkovChain, from_sequences, new process types)</p></li>
+<li><p>You change behaviour (e.g. new validation rules)</p></li>
+<li><p>You fix a bug → add a test that would have caught the bug</p></li>
+</ul>
+<p><strong>Minimal rule:</strong></p>
+<blockquote>
+<div><p>“No new feature without at least one test that hits it.”</p>
+</div></blockquote>
+</section>
+<section id="how-often-to-run-tests">
+<h3>2.3 How Often to Run Tests<a class="headerlink" href="#how-often-to-run-tests" title="Link to this heading"></a></h3>
+<p><strong>During development:</strong></p>
+<p>After implementing a new feature or refactor:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span><span class="nb">test</span>
+<span class="c1"># or</span>
+uv<span class="w"> </span>run<span class="w"> </span>pytest
+</pre></div>
+</div>
+<p><strong>Before pushing or merging a PR:</strong></p>
+<p>Run full test suite:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>all-checks
+<span class="c1"># which runs: lint + typecheck + tests</span>
+</pre></div>
+</div>
+<p>If something feels risky (big refactor, touching core), run:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>test-verbose
+</pre></div>
+</div>
+<p>to see more detailed output.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="code-quality-formatting-linting-types">
+<h2>3. Code Quality: Formatting, Linting, Types<a class="headerlink" href="#code-quality-formatting-linting-types" title="Link to this heading"></a></h2>
+<p><strong>Tools</strong> (installed as dev deps):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">black</span></code> – formatting</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ruff</span></code> – linting</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mypy</span></code> – static type checking</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pytest</span></code> – tests</p></li>
+</ul>
+<p>Use the <strong>Makefile shortcuts:</strong></p>
+<section id="formatting">
+<h3>3.1 Formatting<a class="headerlink" href="#formatting" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>format
+<span class="c1"># runs: uv run black src/ tests/</span>
+</pre></div>
+</div>
+<p><strong>Run this:</strong></p>
+<ul class="simple">
+<li><p>Before commits when you’ve touched multiple files</p></li>
+<li><p>Anytime pytest complains about style</p></li>
+</ul>
+</section>
+<section id="linting">
+<h3>3.2 Linting<a class="headerlink" href="#linting" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>lint
+<span class="c1"># runs: uv run ruff check src/ tests/</span>
+</pre></div>
+</div>
+<p><strong>Run this:</strong></p>
+<ul class="simple">
+<li><p>Before PRs</p></li>
+<li><p>When adding new modules: ensures imports, unused vars, etc. are clean</p></li>
+</ul>
+</section>
+<section id="type-checking">
+<h3>3.3 Type-checking<a class="headerlink" href="#type-checking" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>typecheck
+<span class="c1"># runs: uv run mypy src/</span>
+</pre></div>
+</div>
+<p><strong>Run this:</strong></p>
+<ul class="simple">
+<li><p>After adding new classes / signatures</p></li>
+<li><p>When refactoring core types (e.g. changing <code class="docutils literal notranslate"><span class="pre">State</span></code>, <code class="docutils literal notranslate"><span class="pre">Path</span></code>, <code class="docutils literal notranslate"><span class="pre">StochasticProcess</span></code>)</p></li>
+</ul>
+</section>
+<section id="full-check">
+<h3>3.4 Full Check<a class="headerlink" href="#full-check" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>all-checks
+<span class="c1"># runs: lint + typecheck + test</span>
+</pre></div>
+</div>
+<p><strong>Use this as your pre-push / pre-merge command.</strong></p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="documentation-expectations">
+<h2>4. Documentation Expectations<a class="headerlink" href="#documentation-expectations" title="Link to this heading"></a></h2>
+<p>We want <strong>lightweight but useful</strong> docs:</p>
+<section id="docstrings">
+<h3>4.1 Docstrings<a class="headerlink" href="#docstrings" title="Link to this heading"></a></h3>
+<p>Every public-facing class and method should have a docstring with:</p>
+<ul class="simple">
+<li><p>Short summary line</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Parameters</span></code> section</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Returns</span></code> (and <code class="docutils literal notranslate"><span class="pre">Raises</span></code> if relevant)</p></li>
+</ul>
+<p><strong>Example:</strong></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">sample_path</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="n">State</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a single sample path (X_0, ..., X_T) from the Markov chain.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    T : int</span>
+<span class="sd">        Horizon (path length will be T+1).</span>
+<span class="sd">    x0 : State, optional</span>
+<span class="sd">        Initial state label. If None, X_0 is sampled from `initial_dist`.</span>
+<span class="sd">    rng : np.random.Generator, optional</span>
+<span class="sd">        Random number generator passed via kwargs.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Path</span>
+<span class="sd">        Simulated trajectory as a Path object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p><strong>Minimum requirement:</strong></p>
+<p>All core types in <code class="docutils literal notranslate"><span class="pre">stochlab.core</span></code> and public models in <code class="docutils literal notranslate"><span class="pre">stochlab.models</span></code> have docstrings like this.</p>
+</section>
+<section id="readme-and-examples">
+<h3>4.2 README and Examples<a class="headerlink" href="#readme-and-examples" title="Link to this heading"></a></h3>
+<p>Keep <code class="docutils literal notranslate"><span class="pre">README.md</span></code> up to date with:</p>
+<ul class="simple">
+<li><p>Brief description of the library’s purpose</p></li>
+<li><p>Simple usage example, e.g.:</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkovChain</span>
+
+<span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">]</span>
+<span class="n">P</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.9</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">],</span>
+     <span class="p">[</span><span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]]</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">MarkovChain</span><span class="o">.</span><span class="n">from_transition_matrix</span><span class="p">(</span><span class="n">states</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="n">path</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">sample_path</span><span class="p">(</span><span class="n">T</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">x0</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Whenever you add a big new concept (e.g. new model type, Monte Carlo utilities), consider adding:</p>
+<ul class="simple">
+<li><p>A new example under README</p></li>
+<li><p>Or eventually an <code class="docutils literal notranslate"><span class="pre">examples/</span></code> directory (later)</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="adding-a-new-feature-checklist">
+<h2>5. Adding a New Feature: Checklist<a class="headerlink" href="#adding-a-new-feature-checklist" title="Link to this heading"></a></h2>
+<p>When you add a new model / core concept (e.g. <code class="docutils literal notranslate"><span class="pre">from_sequences</span></code>, new process type, new Monte Carlo utility), follow this mini checklist:</p>
+<section id="design-first">
+<h3>1. Design First<a class="headerlink" href="#design-first" title="Link to this heading"></a></h3>
+<p>Write a short comment or TODO at the top of the new file/module:</p>
+<ul class="simple">
+<li><p>What the class/function does</p></li>
+<li><p>Inputs/outputs, at a high level</p></li>
+</ul>
+</section>
+<section id="implement-in-src-stochlab">
+<h3>2. Implement in <code class="docutils literal notranslate"><span class="pre">src/stochlab/...</span></code><a class="headerlink" href="#implement-in-src-stochlab" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Put core abstractions in <code class="docutils literal notranslate"><span class="pre">stochlab/core</span></code></p></li>
+<li><p>Put concrete models in <code class="docutils literal notranslate"><span class="pre">stochlab/models</span></code></p></li>
+<li><p>Keep functions small and focused</p></li>
+</ul>
+</section>
+<section id="add-tests-in-tests">
+<h3>3. Add Tests in <code class="docutils literal notranslate"><span class="pre">tests/</span></code><a class="headerlink" href="#add-tests-in-tests" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>At least one unit test per major method / behaviour</p></li>
+<li><p>If you fix a bug → add a regression test</p></li>
+</ul>
+</section>
+<section id="run-tools">
+<h3>4. Run Tools<a class="headerlink" href="#run-tools" title="Link to this heading"></a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>format
+make<span class="w"> </span>lint
+make<span class="w"> </span>typecheck
+make<span class="w"> </span><span class="nb">test</span>
+<span class="c1"># or just</span>
+make<span class="w"> </span>all-checks
+</pre></div>
+</div>
+</section>
+<section id="update-docs">
+<h3>5. Update Docs<a class="headerlink" href="#update-docs" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Add/adjust docstrings</p></li>
+<li><p>If it’s user-facing, consider adding it to README or a short note in the dev guide</p></li>
+</ul>
+</section>
+<section id="commit-push">
+<h3>6. Commit &amp; Push<a class="headerlink" href="#commit-push" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Use a clear commit message</p></li>
+<li><p>Open a PR if using GitHub; include a short description</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="pr-pre-merge-checklist">
+<h2>6. PR / Pre-merge Checklist<a class="headerlink" href="#pr-pre-merge-checklist" title="Link to this heading"></a></h2>
+<p>Before merging to <code class="docutils literal notranslate"><span class="pre">main</span></code>, mentally tick these off:</p>
+<ul class="simple">
+<li><p>[ ] All tests pass: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">test</span></code></p></li>
+<li><p>[ ] Lint &amp; types clean: <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">lint</span></code>, <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">typecheck</span></code></p></li>
+<li><p>[ ] Public classes/functions have docstrings</p></li>
+<li><p>[ ] No debug prints / dead code</p></li>
+<li><p>[ ] README / comments not obviously outdated</p></li>
+<li><p>[ ] Changes are focused (not a huge “do everything” PR)</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Happy coding! 🚀</strong></p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, stochlab contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
