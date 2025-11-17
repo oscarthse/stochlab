@@ -1,6 +1,6 @@
 # stochlab
 
-*A small, serious library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.*
+*A compact library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.*
 
 ---
 
@@ -10,10 +10,11 @@
 
 It's designed to be:
 
-* **Mathematically coherent** – built around clear objects:
+* **Coherence** – built around clear Mathematical objects:
     * a finite **state space** $S = \{s_0, s_1, \ldots, s_{n-1}\}$,
     * a **discrete-time process** $(X_t)_{t=0}^T$ with values in $S$,
     * **sample paths** and **Monte Carlo experiments**.
+* **OOP** - Models/Processes are defined as objects inheriting from the parent class StochasticProcess
 * **Engineer-friendly** – clean abstractions, type hints, tests, and a modular layout ready to grow.
 * **Practical** – aims at use cases like:
     * Markov chains (credit ratings, user journeys, regimes),
@@ -32,7 +33,7 @@ Right now the project is in **early stages**: Phase 1 focuses on solid core abst
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/stochlab.git
+git clone https://github.com/oscarthse/stochlab.git
 cd stochlab
 
 # Install with uv (recommended)
@@ -74,7 +75,7 @@ print(f"State distribution at t=50: {dist}")
 
 ---
 
-## 🧠 Mathematical Foundation
+## Mathematical Foundation
 
 The library implements discrete-time stochastic processes with mathematical precision:
 
@@ -234,7 +235,7 @@ default_prob = result.state_distribution(t=60)["D"]
 # Bull/Bear market transitions
 states = ["Bull", "Bear", "Sideways"]
 P = np.array([[0.85, 0.10, 0.05],
-              [0.15, 0.70, 0.15], 
+              [0.15, 0.70, 0.15],
               [0.20, 0.20, 0.60]])
 
 mc = MarkovChain.from_transition_matrix(states, P)
