@@ -38,9 +38,7 @@ class TestBatchResult:
             Path(times=np.array([0, 1]), states=np.array(["A", "A"])),
         ]
 
-        result = BatchResult(
-            batch_id=0, n_paths=2, mode=ReturnMode.PATHS, paths=paths
-        )
+        result = BatchResult(batch_id=0, n_paths=2, mode=ReturnMode.PATHS, paths=paths)
 
         assert result.batch_id == 0
         assert result.n_paths == 2
@@ -231,4 +229,3 @@ class TestMCStatistics:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

@@ -17,4 +17,3 @@ __all__ = [
     "hitting_times",
     "absorption_probabilities",
 ]
-

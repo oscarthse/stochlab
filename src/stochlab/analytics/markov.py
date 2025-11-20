@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 
@@ -172,10 +172,10 @@ def hitting_times(
         )
 
     Q = P[np.ix_(non_target, non_target)]
-    I = np.eye(Q.shape[0])
+    identity = np.eye(Q.shape[0])
     ones = np.ones(Q.shape[0])
     try:
-        h_sub = np.linalg.solve(I - Q, ones)
+        h_sub = np.linalg.solve(identity - Q, ones)
     except np.linalg.LinAlgError as exc:
         raise RuntimeError(
             "Hitting times do not exist; targets may be unreachable."
@@ -210,12 +210,8 @@ def absorption_probabilities(
     P, states = _extract_transition_matrix(chain_or_matrix, state_space)
     n = P.shape[0]
 
-    transient_idx = _coerce_indices(
-        transient_states, states, state_space, n
-    )
-    absorbing_idx = _coerce_indices(
-        absorbing_states, states, state_space, n
-    )
+    transient_idx = _coerce_indices(transient_states, states, state_space, n)
+    absorbing_idx = _coerce_indices(absorbing_states, states, state_space, n)
 
     if set(transient_idx) & set(absorbing_idx):
         raise ValueError("Transient and absorbing states must be disjoint.")
@@ -225,10 +221,10 @@ def absorption_probabilities(
     Q = P[np.ix_(transient_idx, transient_idx)]
     R = P[np.ix_(transient_idx, absorbing_idx)]
 
-    I = np.eye(Q.shape[0])
+    identity = np.eye(Q.shape[0])
     try:
-        B = np.linalg.solve(I - Q, R)
-        t = np.linalg.solve(I - Q, np.ones(Q.shape[0]))
+        B = np.linalg.solve(identity - Q, R)
+        t = np.linalg.solve(identity - Q, np.ones(Q.shape[0]))
     except np.linalg.LinAlgError as exc:
         raise RuntimeError(
             "Absorption probabilities undefined; (I - Q) is singular."
@@ -251,6 +247,7 @@ def absorption_probabilities(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _extract_transition_matrix(
     chain_or_matrix: MarkovChain | np.ndarray,
@@ -330,4 +327,3 @@ def _validate_absorbing_rows(P: np.ndarray, absorbing_idx: Sequence[int]) -> Non
             raise ValueError(
                 f"State index {idx} is not absorbing (row must equal e_{idx})."
             )
-

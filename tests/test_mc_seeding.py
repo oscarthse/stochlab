@@ -122,10 +122,9 @@ class TestSeedSequenceProperties:
         assert 0.4 < mean < 0.6  # Should be near 0.5 for uniform [0, 1]
 
         std = np.std(values)
-        expected_std = 1 / np.sqrt(12)  # Theoretical for uniform [0, 1]
-        assert 0.2 < std < 0.4  # Should be near expected_std (~0.289)
+        # Theoretical std for uniform [0, 1] is 1/sqrt(12) ≈ 0.289
+        assert 0.2 < std < 0.4  # Should be near theoretical value
 
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

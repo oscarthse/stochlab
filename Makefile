@@ -63,6 +63,15 @@ clean:
 	rm -rf build/
 	rm -rf dist/
 	rm -rf *.egg-info/
+	rm -rf src/*.egg-info/
 	rm -rf docs/_build/
-	find . -type d -name "__pycache__" -exec rm -rf {} +
-	find . -type f -name "*.pyc" -delete
+	rm -rf .pytest_cache/
+	rm -rf .mypy_cache/
+	rm -rf .ruff_cache/
+	rm -rf .coverage
+	rm -rf htmlcov/
+	find . -type d -name "__pycache__" -not -path "./.venv/*" -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -not -path "./.venv/*" -delete 2>/dev/null || true
+	find . -type f -name "*.pyo" -not -path "./.venv/*" -delete 2>/dev/null || true
+	find . -type f -name "*.so" -not -path "./.venv/*" -delete 2>/dev/null || true
+	@echo "✅ Cleanup complete"

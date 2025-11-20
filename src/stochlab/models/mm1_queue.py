@@ -31,16 +31,12 @@ class MM1Queue(StochasticProcess):
         if service_rate <= 0:
             raise ValueError(f"service_rate must be > 0, got {service_rate}.")
         if max_queue_length < 0:
-            raise ValueError(
-                f"max_queue_length must be >= 0, got {max_queue_length}."
-            )
+            raise ValueError(f"max_queue_length must be >= 0, got {max_queue_length}.")
 
         self.arrival_rate = float(arrival_rate)
         self.service_rate = float(service_rate)
         self.max_queue_length = int(max_queue_length)
-        self._state_space = StateSpace(
-            list(range(self.max_queue_length + 1))
-        )
+        self._state_space = StateSpace(list(range(self.max_queue_length + 1)))
 
     @property
     def state_space(self) -> StateSpace:
@@ -77,6 +73,10 @@ class MM1Queue(StochasticProcess):
                     f"x0={x0} not in queue state space "
                     f"[0, {self.max_queue_length}]."
                 )
+            # x0 is validated to be in state_space, which contains ints
+            # Handle both Python int and numpy int types
+            if not isinstance(x0, (int, np.integer)):
+                raise TypeError(f"x0 must be an int, got {type(x0).__name__}")
             queue_length = int(x0)
 
         states = np.empty(T + 1, dtype=int)
@@ -119,4 +119,3 @@ class MM1Queue(StochasticProcess):
             states=states,
             extras={"event_types": np.array(event_types, dtype=object)},
         )
-

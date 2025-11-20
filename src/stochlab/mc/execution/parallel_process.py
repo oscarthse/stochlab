@@ -94,7 +94,7 @@ def _simulate_batch_worker(
 
     # Create RNGs for each path
     from ..seeding import make_rng
-    
+
     # Simulate paths
     if mode == ReturnMode.PATHS.value:
         # Return full Path objects
@@ -150,9 +150,11 @@ def _simulate_batch_worker(
         # Compute batch statistics
         values_array = np.array(final_values, dtype=object)
         partial_stats = {
-            "sum": float(np.sum(values_array == _WORKER_PROCESS.state_space.states[0]))
-            if hasattr(values_array[0], "__eq__")
-            else None,
+            "sum": (
+                float(np.sum(values_array == _WORKER_PROCESS.state_space.states[0]))
+                if hasattr(values_array[0], "__eq__")
+                else None
+            ),
             "n": batch_size,
             # Can add more statistics here (mean, variance, etc.)
         }
@@ -265,7 +267,7 @@ class ProcessPoolParallelExecutor(ParallelExecutor):
             # Optional progress bar
             if show_progress:
                 try:
-                    from tqdm import tqdm
+                    from tqdm import tqdm  # type: ignore[import-untyped]
 
                     iterator = tqdm(
                         iterator,
@@ -377,7 +379,7 @@ class ProcessPoolParallelExecutor(ParallelExecutor):
 
             if show_progress:
                 try:
-                    from tqdm import tqdm
+                    from tqdm import tqdm  # type: ignore[import-untyped]
 
                     iterator = tqdm(
                         iterator,
@@ -406,4 +408,3 @@ class ProcessPoolParallelExecutor(ParallelExecutor):
         if self._pool is not None:
             self._pool.shutdown(wait=True)
             self._pool = None
-

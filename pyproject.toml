@@ -36,8 +36,12 @@ dev = [
   "black>=25.11.0",
   "ipykernel>=7.1.0",
   "pytest>=9.0.1",
+  "pytest-cov>=4.0.0",
+  "coverage[toml]>=7.0.0",
   "ruff>=0.14.5",
   "mypy>=1.5.0",
+  "build>=1.0.0",
+  "twine>=5.0.0",
 ]
 
 [project.urls]
@@ -54,3 +58,26 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 stochlab = ["py.typed"]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/_build/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = false

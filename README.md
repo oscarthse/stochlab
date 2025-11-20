@@ -53,6 +53,7 @@ array([0.57142857, 0.42857143])
 - 📊 **[Analytics Guide](https://oscarthse.github.io/stochlab/guides/analytics.html)** - Markov chain analytics
 - 🔧 **[API Reference](https://oscarthse.github.io/stochlab/api/index.html)** - Complete API documentation
 - 💻 **[Developer Guide](https://oscarthse.github.io/stochlab/contributing/development_guide.html)** - Contributing guidelines
+- 🗺️ **[Roadmap](ROADMAP.md)** - Planned features and future work
 
 ---
 

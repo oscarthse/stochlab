@@ -188,4 +188,3 @@ def merge_batch_results(batch_results: list[BatchResult]) -> BatchResult:
 
     else:
         raise ValueError(f"Unknown return mode: {mode}")
-

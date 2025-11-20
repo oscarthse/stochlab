@@ -10,7 +10,7 @@ def test_random_walk_basic():
     """Test basic RandomWalk creation and path generation."""
     rw = RandomWalk(lower_bound=0, upper_bound=10, p=0.5)
     assert len(rw.state_space) == 11
-    
+
     path = rw.sample_path(T=100, x0=5)
     assert len(path) == 101
     assert path[0] == 5
@@ -20,11 +20,11 @@ def test_random_walk_basic():
 def test_random_walk_reflecting_boundaries():
     """Test that boundaries reflect properly."""
     rw = RandomWalk(lower_bound=0, upper_bound=2, p=0.5)
-    
+
     # At lower boundary, must move up
     path = rw.sample_path(T=1, x0=0)
     assert path[1] == 1
-    
+
     # At upper boundary, must move down
     path = rw.sample_path(T=1, x0=2)
     assert path[1] == 1
@@ -34,7 +34,7 @@ def test_random_walk_biased():
     """Test biased random walk (p != 0.5)."""
     np.random.seed(42)
     rw = RandomWalk(lower_bound=-5, upper_bound=5, p=0.7)
-    
+
     path = rw.sample_path(T=100, x0=0)
     # With p=0.7, expect upward drift
     assert path[-1] >= 0  # Likely to end positive
@@ -69,8 +69,8 @@ def test_random_walk_simulate_paths():
     """Test multi-path simulation via StochasticProcess interface."""
     rw = RandomWalk(0, 10, p=0.5)
     result = rw.simulate_paths(n_paths=100, T=50, x0=5)
-    
+
     assert len(result) == 100
     df = result.to_dataframe()
     assert len(df) == 100 * 51  # 100 paths × 51 time points
-    assert all(0 <= s <= 10 for s in df['state'])
+    assert all(0 <= s <= 10 for s in df["state"])

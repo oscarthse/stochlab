@@ -70,7 +70,23 @@ Your Monte Carlo engine now has **extensive, production-grade documentation** ac
 
 **Audience**: API reference, IDE autocomplete
 
-### Level 5: Examples & Demos
+### Level 5: Project Planning & Meta-Documentation
+
+**Files**:
+- `ROADMAP.md` ⭐ **NEW** - Future features and long-term vision
+- `CHANGELOG.md` ⭐ **NEW** - Version history and release notes
+- `docs/STRUCTURE.md` - Documentation organization
+- `docs/CHANGELOG.md` - Documentation reorganization history
+
+**Coverage**:
+- ✅ Planned features (HMMs, visualization, more models)
+- ✅ Version roadmap (0.2.0 - 0.5.0+)
+- ✅ Long-term vision
+- ✅ Release notes and migration guides
+
+**Audience**: Contributors, maintainers, strategic planning
+
+### Level 6: Examples & Demos
 
 **Files**:
 - `demo_monte_carlo.py` - Runnable demo
