@@ -4,8 +4,9 @@ on:
   push:
     branches: ["main"]
 
+# Only 1 docs build runs at a time
 concurrency:
-  group: "pages"
+  group: docs-build
   cancel-in-progress: true
 
 permissions:
@@ -16,22 +17,34 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # Checkout repo
       - uses: actions/checkout@v4
 
+      # Install UV (official action, installs real Rust version)
+      - uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      # Install Python (UV manages the environment itself)
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install uv & docs deps
-        run: |
-          pip install uv
-          uv sync --extra docs
+      # Sync environment with docs extras
+      - name: Install dependencies (UV)
+        run: uv sync --extra docs
 
-      - name: Build docs
+      # Build Sphinx documentation
+      - name: Build Sphinx docs
         run: |
-          uv run sphinx-build -b html docs docs/_build/html
+          uv run sphinx-build \
+            -b html \
+            docs \
+            docs/_build/html
 
+      # Upload build output for GitHub Pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
@@ -43,7 +56,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - id: deployment
         uses: actions/deploy-pages@v4
-
