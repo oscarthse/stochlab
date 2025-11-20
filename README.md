@@ -2,10 +2,9 @@
 
 <p align="center">
   <img
-    src="docs/_static/logofinalpng-1.png"
+    src="docs/_static/logofinalpng-1-onblack.png"
     alt="stochlab logo"
-    width="220"
-    style="background-color:#000000;padding:16px;border-radius:18px;"
+    width="260"
   />
 </p>
 
