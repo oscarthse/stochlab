@@ -1,11 +1,25 @@
-from .core import StateSpace, State, Path, SimulationResult, StochasticProcess
-from .models import MarkovChain
+from __future__ import annotations
+
+from importlib import metadata as _metadata
+
+from . import analytics
+from .core import Path, SimulationResult, State, StateSpace, StochasticProcess
+from .models import MM1Queue, MarkovChain, RandomWalk
+
+try:
+    __version__ = _metadata.version("stochlab")
+except _metadata.PackageNotFoundError:  # pragma: no cover - dev installs
+    __version__ = "0.0.0"
 
 __all__ = [
-    "StateSpace",
     "State",
+    "StateSpace",
     "Path",
     "SimulationResult",
     "StochasticProcess",
     "MarkovChain",
+    "RandomWalk",
+    "MM1Queue",
+    "analytics",
+    "__version__",
 ]

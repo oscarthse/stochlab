@@ -1,9 +1,26 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "stochlab"
 version = "0.1.0"
 description = "Discrete-time stochastic processes, Monte Carlo, analytics, and reporting."
 readme = "README.md"
 requires-python = ">=3.11"
+authors = [
+  { name = "Oscar Thiele Serrano" },
+]
+license = "MIT"
+keywords = ["stochastic-processes", "markov-chains", "monte-carlo", "analytics", "queueing"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Mathematics",
+]
 dependencies = [
   "numpy>=1.26",
   "pandas>=2.0",
@@ -22,3 +39,18 @@ dev = [
   "ruff>=0.14.5",
   "mypy>=1.5.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/oscarsthse/stochlab"
+Documentation = "https://github.com/oscarsthse/stochlab/tree/main/docs"
+Source = "https://github.com/oscarsthse/stochlab"
+Issues = "https://github.com/oscarsthse/stochlab/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+stochlab = ["py.typed"]

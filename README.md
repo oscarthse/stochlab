@@ -12,6 +12,32 @@
 
 ---
 
+## 📦 Installation
+
+stochlab is published as a standard Python package and targets Python 3.11+.
+
+```bash
+pip install stochlab
+```
+
+Optional extras:
+
+- `pip install "stochlab[docs]"` – build the Sphinx documentation locally.
+- `pip install "stochlab[dev]"` – formatting, linting, typing, and test tooling.
+
+Verify your install:
+
+```python
+>>> from stochlab import MarkovChain, analytics
+>>> import numpy as np
+>>> P = np.array([[0.7, 0.3], [0.4, 0.6]])
+>>> mc = MarkovChain.from_transition_matrix(["Bull", "Bear"], P)
+>>> analytics.stationary_distribution(mc).distribution
+array([0.57142857, 0.42857143])
+```
+
+---
+
 ## 🚀 What is stochlab?
 
 `stochlab` is a Python library for **finite / countable discrete-time stochastic processes**.
