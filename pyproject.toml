@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "stochlab"
-version = "0.1.0"
+version = "0.1.1"
 description = "Discrete-time stochastic processes, Monte Carlo, analytics, and reporting."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -42,7 +42,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/oscarsthse/stochlab"
-Documentation = "https://github.com/oscarsthse/stochlab/tree/main/docs"
+Documentation = "https://oscarthse.github.io/stochlab/"
 Source = "https://github.com/oscarsthse/stochlab"
 Issues = "https://github.com/oscarsthse/stochlab/issues"
 

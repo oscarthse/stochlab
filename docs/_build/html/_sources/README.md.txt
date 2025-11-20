@@ -193,5 +193,5 @@ Our documentation aims to be:
 
 **Happy reading!** 📖
 
-If you find any documentation gaps or errors, please [open an issue](https://github.com/yourusername/stochlab/issues).
+If you find any documentation gaps or errors, please [open an issue](https://github.com/oscarthse/stochlab/issues).
 

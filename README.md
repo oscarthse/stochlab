@@ -8,6 +8,12 @@
   />
 </p>
 
+<p align="center">
+  <a href="https://oscarthse.github.io/stochlab/"><img src="https://img.shields.io/badge/docs-latest-blue.svg" alt="Documentation"></a>
+  <a href="https://github.com/oscarthse/stochlab"><img src="https://img.shields.io/badge/version-0.1.1-orange.svg" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
+</p>
+
 *A compact library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.*
 
 ---
@@ -35,6 +41,18 @@ Verify your install:
 >>> analytics.stationary_distribution(mc).distribution
 array([0.57142857, 0.42857143])
 ```
+
+---
+
+## 📖 Documentation
+
+**Full documentation is available at: [https://oscarthse.github.io/stochlab/](https://oscarthse.github.io/stochlab/)**
+
+- 📘 **[Getting Started Guide](https://oscarthse.github.io/stochlab/getting_started.html)** - Quick introduction and basic usage
+- 🎲 **[Monte Carlo Guide](https://oscarthse.github.io/stochlab/guides/monte_carlo.html)** - High-performance parallel simulation
+- 📊 **[Analytics Guide](https://oscarthse.github.io/stochlab/guides/analytics.html)** - Markov chain analytics
+- 🔧 **[API Reference](https://oscarthse.github.io/stochlab/api/index.html)** - Complete API documentation
+- 💻 **[Developer Guide](https://oscarthse.github.io/stochlab/contributing/development_guide.html)** - Contributing guidelines
 
 ---
 
