@@ -6,7 +6,7 @@ from typing import Any, TYPE_CHECKING
 
 from ..core.results import SimulationResult
 from .execution.parallel_process import ProcessPoolParallelExecutor
-from .results import BatchResult, MCStatistics, ReturnMode, merge_batch_results
+from .results import MCStatistics, ReturnMode, merge_batch_results
 from .seeding import generate_path_seeds
 
 if TYPE_CHECKING:

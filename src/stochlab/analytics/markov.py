@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, Sequence
+from typing import Sequence
 
 import numpy as np
 
@@ -172,10 +172,10 @@ def hitting_times(
         )
 
     Q = P[np.ix_(non_target, non_target)]
-    I = np.eye(Q.shape[0])
+    identity = np.eye(Q.shape[0])
     ones = np.ones(Q.shape[0])
     try:
-        h_sub = np.linalg.solve(I - Q, ones)
+        h_sub = np.linalg.solve(identity - Q, ones)
     except np.linalg.LinAlgError as exc:
         raise RuntimeError(
             "Hitting times do not exist; targets may be unreachable."
@@ -221,10 +221,10 @@ def absorption_probabilities(
     Q = P[np.ix_(transient_idx, transient_idx)]
     R = P[np.ix_(transient_idx, absorbing_idx)]
 
-    I = np.eye(Q.shape[0])
+    identity = np.eye(Q.shape[0])
     try:
-        B = np.linalg.solve(I - Q, R)
-        t = np.linalg.solve(I - Q, np.ones(Q.shape[0]))
+        B = np.linalg.solve(identity - Q, R)
+        t = np.linalg.solve(identity - Q, np.ones(Q.shape[0]))
     except np.linalg.LinAlgError as exc:
         raise RuntimeError(
             "Absorption probabilities undefined; (I - Q) is singular."

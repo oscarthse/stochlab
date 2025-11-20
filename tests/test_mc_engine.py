@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from stochlab.core import SimulationResult
-from stochlab.mc import MonteCarloEngine, ReturnMode
+from stochlab.mc import MonteCarloEngine
 from stochlab.models import MarkovChain, RandomWalk
 
 
