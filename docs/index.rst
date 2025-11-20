@@ -1,5 +1,5 @@
 stochlab Documentation
-=====================
+========================
 
 **stochlab** is a Python library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.
 
@@ -9,6 +9,7 @@ stochlab Documentation
 
    getting_started
    quick_reference
+   analytics
    api/index
 
 Quick Start

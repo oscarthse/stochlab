@@ -11,7 +11,7 @@ def test_core_integration():
     ss = StateSpace(states=["A", "B", "C"])
 
     # Create some sample paths
-    path1 = Path(times=np.array([0, 1, 2]), states=ss)
+    path1 = Path(times=np.array([0, 1, 2]), states=np.array(["A", "B", "C"]))
     path2 = Path(times=np.array([0, 1, 2]), states=np.array(["A", "A", "C"]))
 
     # Create simulation result

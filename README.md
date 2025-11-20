@@ -113,6 +113,92 @@ The `SimulationResult` class collects multiple paths and provides analysis metho
 
 ---
 
+## 🧮 Analytical Solutions (Finite Markov Chains)
+
+The `stochlab.analytics` module packages classical finite-state Markov chain formulas with validation and friendly outputs. Every routine accepts either a raw `numpy.ndarray` transition matrix or a `MarkovChain` instance (preserving state labels).
+
+### Stationary Distributions
+
+Find $\pi$ satisfying
+
+```math
+\pi P = \pi, \qquad \sum_{i=0}^{n-1} \pi_i = 1.
+```
+
+We solve
+
+```math
+\begin{bmatrix}
+P^{\top} - I \\
+\mathbf{1}^{\top}
+\end{bmatrix} \pi =
+\begin{bmatrix}
+0 \\
+1
+\end{bmatrix}
+```
+
+via least squares, clip tiny negatives, renormalize, and report $\|\pi P - \pi\|_1$ so you can judge accuracy. Irreducible aperiodic chains yield a unique solution; reducible chains may have multiple stationary distributions, and the solver returns one valid vector.
+
+```python
+from stochlab.analytics import stationary_distribution
+
+res = stationary_distribution(mc)
+print(res.distribution)
+print(res.residual)
+print(res.states)
+```
+
+### Expected Hitting Times
+
+For a target set $T$, the hitting time $\tau_T = \inf\{t \ge 0 : X_t \in T\}$ has expectation
+
+```math
+h = (I - Q)^{-1} \mathbf{1},
+```
+
+where $Q$ restricts $P$ to non-target states. Targets themselves have $h_i = 0$. If $(I - Q)$ is singular (targets unreachable) the implementation raises a clear `RuntimeError`.
+
+```python
+from stochlab.analytics import hitting_times
+res = hitting_times(mc, targets=["Bear"])
+print(res.times)
+print(res.target_mask)
+```
+
+### Absorption Probabilities & Times
+
+Partition states into transient $T$ and absorbing $A$ so that
+
+```math
+P = \begin{bmatrix}
+Q & R \\
+0 & I
+\end{bmatrix}.
+```
+
+The fundamental matrix $N = (I - Q)^{-1}$ yields
+
+- $B = N R$: probability of ending in each absorbing state.
+- $t = N \mathbf{1}$: expected steps before absorption.
+
+```python
+from stochlab.analytics import absorption_probabilities
+
+res = absorption_probabilities(
+    mc.P,
+    transient_states=["Active", "Dormant"],
+    absorbing_states=["Churned"],
+    state_space=mc.state_space,
+)
+print(res.probabilities)
+print(res.expected_steps)
+```
+
+Rows supplied as absorbing are validated to ensure they are truly absorbing (identity rows), preventing silent misuse.
+
+---
+
 ## 🏗️ Architecture
 
 `stochlab` follows a **layered architecture** designed for extensibility and mathematical rigor:
@@ -128,12 +214,19 @@ Fundamental building blocks that all models depend on:
 ### Models Layer (`stochlab.models`)
 Concrete implementations of stochastic processes:
 
-- **`MarkovChain`**: Finite-state, time-homogeneous Markov chains with full validation
-- *Coming soon*: `RandomWalk`, `MM1Queue`, `GaltonWatsonProcess`
+- **`MarkovChain`**: Finite-state, time-homogeneous Markov chains with validation and convenience constructors
+- **`RandomWalk`**: Reflecting random walk on bounded integers
+- **`MM1Queue`**: Capped M/M/1 queue with exponential event clocks and overflow detection
+- *Coming soon*: `GaltonWatsonProcess`, birth–death processes
+
+### Analytics Layer (`stochlab.analytics`)
+Finite-state analytical routines:
+
+- `stationary_distribution`, `hitting_times`, `absorption_probabilities`
+- Dataclass outputs with state labels, residual diagnostics, and model-safe validation
 
 ### Future Layers
 - **`stochlab.mc`**: Advanced Monte Carlo engines with variance reduction
-- **`stochlab.analytics`**: Analytical solutions (stationary distributions, hitting times)
 - **`stochlab.reporting`**: Visualization and reporting tools
 
 ---
@@ -191,8 +284,8 @@ stochlab/
 - [x] Development workflow (Makefile, linting, formatting)
 
 ### Phase 2: Model Expansion
-- [ ] `RandomWalk` - symmetric and asymmetric random walks
-- [ ] `MM1Queue` - single-server queueing model
+- [x] `RandomWalk` - symmetric and asymmetric random walks
+- [x] `MM1Queue` - single-server queueing model
 - [ ] `GaltonWatsonProcess` - branching processes
 - [ ] Birth-death processes
 
@@ -203,7 +296,7 @@ stochlab/
 - [ ] Rare event simulation techniques
 
 ### Phase 4: Analytics & Theory
-- [ ] Markov chain analytics (stationary distributions, hitting times)
+- [x] Markov chain analytics (stationary distributions, hitting times, absorption)
 - [ ] Queueing metrics (L, W, Lq, Wq)
 - [ ] Branching process extinction probabilities
 - [ ] Spectral analysis tools
