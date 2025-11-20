@@ -1,0 +1,198 @@
+name: CI
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main", "develop"]
+  workflow_dispatch:  # Allow manual triggering
+
+# Cancel in-progress runs for the same workflow
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write  # For PR comments (coverage)
+
+jobs:
+  # Job 1: Run test suite across multiple Python versions and OS
+  test:
+    name: Test (Python ${{ matrix.python }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false  # Continue even if one matrix job fails
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        exclude:
+          # Reduce matrix size: only test Python 3.11 on macOS/Windows
+          - python-version: "3.12"
+            os: macos-latest
+          - python-version: "3.13"
+            os: macos-latest
+          - python-version: "3.12"
+            os: windows-latest
+          - python-version: "3.13"
+            os: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Install package in development mode
+        run: uv pip install -e .
+
+      - name: Run tests with coverage
+        run: |
+          uv run pytest tests/ \
+            --cov=src/stochlab \
+            --cov-report=xml \
+            --cov-report=term \
+            --cov-report=html \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-${{ matrix.os }}-py${{ matrix.python-version }}
+          fail_ci_if_error: false  # Don't fail CI if codecov upload fails
+
+      - name: Upload coverage HTML report
+        uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
+        with:
+          name: coverage-report
+          path: htmlcov/
+          retention-days: 7
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: |
+            .pytest_cache/
+            coverage.xml
+          retention-days: 7
+
+  # Job 2: Code quality checks (linting, type checking, formatting)
+  quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: uv sync --extra dev
+
+      - name: Check code formatting with black
+        run: uv run black --check src/ tests/
+
+      - name: Lint with ruff
+        run: uv run ruff check src/ tests/
+
+      - name: Type check with mypy
+        run: uv run mypy src/
+        continue-on-error: false
+
+  # Job 3: Verify package builds correctly
+  build:
+    name: Build Package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: uv sync --extra dev
+
+      - name: Build package
+        run: uv run python -m build
+
+      - name: Verify package structure
+        run: |
+          # Check wheel exists
+          test -f dist/*.whl || exit 1
+          # Check sdist exists
+          test -f dist/*.tar.gz || exit 1
+          # Check wheel can be installed
+          uv pip install dist/*.whl --dry-run || exit 1
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-packages
+          path: dist/*
+          retention-days: 1
+
+  # Job 4: Check that imports work correctly
+  import-check:
+    name: Import Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v2
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package
+        run: uv pip install -e .
+
+      - name: Test imports
+        run: |
+          python -c "import stochlab; print(f'stochlab version: {stochlab.__version__}')"
+          python -c "from stochlab import MarkovChain, RandomWalk, MM1Queue"
+          python -c "from stochlab.mc import MonteCarloEngine"
+          python -c "from stochlab import analytics"
+          python -c "from stochlab.core import Path, SimulationResult, StateSpace"
+          echo "✅ All imports successful"
+

@@ -42,6 +42,10 @@ docs/
 **Contributing**:
 - **[Development Guide](contributing/development_guide.md)** - Contributing guidelines and workflow
 
+**Project Planning**:
+- **[Roadmap](../ROADMAP.md)** 🗺️ - Planned features and future work (includes HMMs!)
+- **[Changelog](../CHANGELOG.md)** - Version history and release notes
+
 ## 🚀 Quick Links
 
 ### For Users
