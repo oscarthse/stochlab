@@ -82,6 +82,8 @@ The docs workflow will automatically deploy.
 3. Add repository: `oscarthse/stochlab`
 4. Get badge code and add to README.md:
 
+# commnt for test
+
 ```markdown
 [![codecov](https://codecov.io/gh/oscarthse/stochlab/branch/main/graph/badge.svg)](https://codecov.io/gh/oscarthse/stochlab)
 ```

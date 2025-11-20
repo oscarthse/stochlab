@@ -1,6 +1,5 @@
 # The Inference Landscape for Stochastic Processes
 
-**Author**: AI Assistant  
 **Date**: 2024-11-20  
 **Status**: Exploration & Design Document
 
