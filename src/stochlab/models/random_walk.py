@@ -39,16 +39,34 @@ class RandomWalk(StochasticProcess):
         return self._state_space
 
     def sample_path(self, T: int, x0: Hashable | None = None, **kwargs: Any) -> Path:
+        # Extract rng if provided, otherwise use default
+        rng = kwargs.pop("rng", None)
+        if rng is None:
+            rng = np.random.default_rng()
+        
+        if kwargs:
+            raise TypeError(f"Unused keyword arguments: {list(kwargs.keys())}")
+        
         if x0 is None:
             # State space contains ints, convert to list for np.random.choice
             states_list = list(self._state_space.states)
-            x0 = np.random.choice(states_list)  # type: ignore[arg-type]
+            x0 = int(rng.choice(states_list))  # Convert to Python int immediately
+        else:
+            # Convert to int - handle both Python int and numpy integer types
+            # First check if it's in state space (more lenient check)
+            if x0 not in self._state_space:
+                raise ValueError(f"x0={x0} not in state space")
+            # Then convert to int (handles numpy scalars, Python ints, etc.)
+            # We know x0 is in state_space which contains ints, so this is safe
+            try:
+                x0 = int(x0)  # type: ignore[call-overload]
+            except (ValueError, TypeError) as e:
+                raise TypeError(f"x0 must be convertible to int, got {type(x0).__name__}: {e}") from e
+        
         if x0 not in self._state_space:
             raise ValueError(f"x0={x0} not in state space")
-        # x0 is validated to be in state_space, which contains ints
-        if not isinstance(x0, int):
-            raise TypeError(f"x0 must be an int, got {type(x0).__name__}")
-        current = int(x0)
+        
+        current = x0
 
         states = np.empty(T + 1, dtype=int)
         states[0] = current
@@ -60,6 +78,6 @@ class RandomWalk(StochasticProcess):
             elif x == self._upper:
                 states[t + 1] = x - 1
             else:
-                states[t + 1] = x + 1 if np.random.rand() < self._p else x - 1
+                states[t + 1] = x + 1 if rng.random() < self._p else x - 1
 
         return Path(times=np.arange(T + 1), states=states)
