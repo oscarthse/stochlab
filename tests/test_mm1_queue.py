@@ -63,4 +63,3 @@ def test_mm1_queue_rejects_unused_kwargs():
     queue = MM1Queue(arrival_rate=1.0, service_rate=1.0, max_queue_length=5)
     with pytest.raises(TypeError, match="Unused keyword arguments"):
         queue.sample_path(T=1, foo="bar")
-

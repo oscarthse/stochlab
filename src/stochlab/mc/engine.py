@@ -224,6 +224,7 @@ class MonteCarloEngine:
             rng = make_rng(path_seeds[i])
             # Also set global state as fallback for processes that don't support rng kwarg
             import numpy as np
+
             np.random.seed(path_seeds[i])
             # Try to pass rng, but don't fail if process doesn't accept it
             try:
@@ -301,11 +302,14 @@ class MonteCarloEngine:
             # Create minimal placeholder path to satisfy SimulationResult
             import numpy as np
             from ..core.simulation import Path
-            
+
             placeholder = Path(
                 times=np.array([0]),
                 states=np.array([None], dtype=object),
-                extras={"mode": "stats_only", "note": "No full paths stored in stats mode"}
+                extras={
+                    "mode": "stats_only",
+                    "note": "No full paths stored in stats mode",
+                },
             )
             paths = [placeholder]  # Minimal placeholder
 
@@ -406,6 +410,7 @@ class MonteCarloEngine:
         # Confidence interval (assume normal)
         try:
             from scipy import stats as sp_stats
+
             z_score = sp_stats.norm.ppf(1 - (1 - confidence_level) / 2)
         except ImportError:
             # Fallback to normal approximation without scipy
@@ -417,12 +422,13 @@ class MonteCarloEngine:
             else:
                 # Rough approximation for other levels
                 import warnings
+
                 warnings.warn(
                     f"scipy not installed, using rough approximation for {confidence_level} CI",
-                    UserWarning
+                    UserWarning,
                 )
                 z_score = 2.0  # Conservative estimate
-        
+
         ci_lower = mean - z_score * stderr
         ci_upper = mean + z_score * stderr
 
@@ -434,4 +440,3 @@ class MonteCarloEngine:
             confidence_interval=(ci_lower, ci_upper),
             confidence_level=confidence_level,
         )
-

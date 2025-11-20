@@ -9,7 +9,7 @@ from stochlab.core import Path, StateSpace, StochasticProcess
 
 class RandomWalk(StochasticProcess):
     """Simple random walk on integers [lower_bound, upper_bound] with reflecting boundaries.
-    
+
     At each step: move up with probability p, down with probability 1-p.
     At boundaries: must move back into interior.
     """
@@ -23,8 +23,10 @@ class RandomWalk(StochasticProcess):
         if not 0 < p < 1:
             raise ValueError(f"p must be in (0, 1), got {p}")
         if lower_bound >= upper_bound:
-            raise ValueError(f"lower_bound must be < upper_bound, got [{lower_bound}, {upper_bound}]")
-        
+            raise ValueError(
+                f"lower_bound must be < upper_bound, got [{lower_bound}, {upper_bound}]"
+            )
+
         self._lower = lower_bound
         self._upper = upper_bound
         self._p = p

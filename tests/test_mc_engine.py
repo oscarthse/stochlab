@@ -92,9 +92,7 @@ class TestMonteCarloParallel:
     def test_parallel_simulation(self, simple_markov_chain):
         """Test that parallel simulation works."""
         engine = MonteCarloEngine(simple_markov_chain)
-        result = engine.simulate(
-            n_paths=100, T=10, seed=42, parallel=True, n_jobs=2
-        )
+        result = engine.simulate(n_paths=100, T=10, seed=42, parallel=True, n_jobs=2)
 
         assert isinstance(result, SimulationResult)
         assert len(result.paths) == 100
@@ -125,16 +123,16 @@ class TestMonteCarloParallel:
         # Both should have correct number of paths
         assert len(result_seq.paths) == 20
         assert len(result_par.paths) == 20
-        
+
         # Both should be reproducible when run again with same seed
         result_seq2 = engine.simulate(n_paths=20, T=10, seed=42, parallel=False)
         result_par2 = engine.simulate(n_paths=20, T=10, seed=42, parallel=True)
-        
+
         # Sequential should match sequential
         states_seq1 = sorted([tuple(p.states) for p in result_seq.paths])
         states_seq2 = sorted([tuple(p.states) for p in result_seq2.paths])
         assert states_seq1 == states_seq2
-        
+
         # Parallel should match parallel
         states_par1 = sorted([tuple(p.states) for p in result_par.paths])
         states_par2 = sorted([tuple(p.states) for p in result_par2.paths])
@@ -166,9 +164,7 @@ class TestReturnModes:
     def test_values_mode(self, simple_markov_chain):
         """Test values mode (lighter than full paths)."""
         engine = MonteCarloEngine(simple_markov_chain)
-        result = engine.simulate(
-            n_paths=10, T=5, mode="values", seed=42, parallel=True
-        )
+        result = engine.simulate(n_paths=10, T=5, mode="values", seed=42, parallel=True)
 
         # Should still return paths (compatibility), but they're minimal
         assert len(result.paths) == 10
@@ -176,9 +172,7 @@ class TestReturnModes:
     def test_stats_mode(self, simple_markov_chain):
         """Test stats mode (lightest)."""
         engine = MonteCarloEngine(simple_markov_chain)
-        result = engine.simulate(
-            n_paths=10, T=5, mode="stats", seed=42, parallel=True
-        )
+        result = engine.simulate(n_paths=10, T=5, mode="stats", seed=42, parallel=True)
 
         # Stats mode doesn't return full paths
         assert "statistics" in result.metadata or len(result.paths) == 0
@@ -346,4 +340,3 @@ class TestErrorHandling:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
-

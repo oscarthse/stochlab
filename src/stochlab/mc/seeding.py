@@ -106,4 +106,3 @@ def make_rng(seed: int) -> np.random.Generator:
     - Suitable for parallel use
     """
     return np.random.default_rng(seed)
-

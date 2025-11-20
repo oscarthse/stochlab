@@ -81,4 +81,3 @@ class ParallelExecutor(ABC):
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - clean up resources."""
         self.close()
-

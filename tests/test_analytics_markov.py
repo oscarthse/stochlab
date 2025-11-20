@@ -109,4 +109,3 @@ def test_state_space_matrix_mismatch():
     ss = StateSpace([0])
     with pytest.raises(ValueError, match="StateSpace size"):
         hitting_times(P, targets=[0], state_space=ss)
-

@@ -210,12 +210,8 @@ def absorption_probabilities(
     P, states = _extract_transition_matrix(chain_or_matrix, state_space)
     n = P.shape[0]
 
-    transient_idx = _coerce_indices(
-        transient_states, states, state_space, n
-    )
-    absorbing_idx = _coerce_indices(
-        absorbing_states, states, state_space, n
-    )
+    transient_idx = _coerce_indices(transient_states, states, state_space, n)
+    absorbing_idx = _coerce_indices(absorbing_states, states, state_space, n)
 
     if set(transient_idx) & set(absorbing_idx):
         raise ValueError("Transient and absorbing states must be disjoint.")
@@ -251,6 +247,7 @@ def absorption_probabilities(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _extract_transition_matrix(
     chain_or_matrix: MarkovChain | np.ndarray,
@@ -330,4 +327,3 @@ def _validate_absorbing_rows(P: np.ndarray, absorbing_idx: Sequence[int]) -> Non
             raise ValueError(
                 f"State index {idx} is not absorbing (row must equal e_{idx})."
             )
-
