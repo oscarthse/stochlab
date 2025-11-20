@@ -14,11 +14,21 @@ extensions = [
     'myst_parser',
 ]
 
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+]
+
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
+html_logo = '_static/logofinalpng-1.png'
+html_css_files = ['css/custom.css']
+html_theme_options = {
+    'logo_only': True,
+}
 
 autodoc_default_options = {
     'members': True,

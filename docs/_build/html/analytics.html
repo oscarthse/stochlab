@@ -9,6 +9,7 @@
   <title>Analytics Module &mdash; stochlab 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95114af3" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -16,7 +17,8 @@
       <script src="_static/documentation_options.js?v=01f34227"></script>
       <script src="_static/doctools.js?v=9bcbadda"></script>
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -32,8 +34,9 @@
 
           
           
-          <a href="index.html" class="icon icon-home">
-            stochlab
+          <a href="index.html">
+            
+              <img src="_static/logofinalpng-1.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -101,7 +104,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="analytics-module">
+  <section class="tex2jax_ignore mathjax_ignore" id="analytics-module">
 <h1>Analytics Module<a class="headerlink" href="#analytics-module" title="Link to this heading"></a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">stochlab.analytics</span></code> package provides <strong>closed-form results</strong> for finite, discrete-time Markov chains. Every routine is implemented exactly as it appears in standard probability texts, but with careful validation and numerical safeguards so you can rely on the results even if you are still building intuition.</p>
 <p>The functions described here live in <code class="docutils literal notranslate"><span class="pre">stochlab.analytics.markov</span></code> and are re-exported from <code class="docutils literal notranslate"><span class="pre">stochlab.analytics</span></code>.</p>
@@ -110,15 +113,15 @@
 <h2>Stationary Distribution<a class="headerlink" href="#stationary-distribution" title="Link to this heading"></a></h2>
 <section id="definition">
 <h3>Definition<a class="headerlink" href="#definition" title="Link to this heading"></a></h3>
-<p>For a transition matrix $P \in \mathbb{R}^{n \times n}$ (row-stochastic: non-negative rows summing to one) a <strong>stationary distribution</strong> is a probability vector $\pi \in \mathbb{R}^n$ satisfying</p>
+<p>For a transition matrix <span class="math notranslate nohighlight">\(P \in \mathbb{R}^{n \times n}\)</span> (row-stochastic: non-negative rows summing to one) a <strong>stationary distribution</strong> is a probability vector <span class="math notranslate nohighlight">\(\pi \in \mathbb{R}^n\)</span> satisfying</p>
 <div class="math notranslate nohighlight">
 \[\pi P = \pi, \qquad \sum_{i=0}^{n-1} \pi_i = 1, \qquad \pi_i \ge 0.\]</div>
-<p>Intuitively, if $X_0 \sim \pi$ then $X_t \sim \pi$ for all $t \ge 0$.</p>
+<p>Intuitively, if <span class="math notranslate nohighlight">\(X_0 \sim \pi\)</span> then <span class="math notranslate nohighlight">\(X_t \sim \pi\)</span> for all <span class="math notranslate nohighlight">\(t \ge 0\)</span>.</p>
 </section>
 <section id="uniqueness">
 <h3>Uniqueness<a class="headerlink" href="#uniqueness" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>If the chain is <strong>irreducible and aperiodic</strong>, $\pi$ exists and is unique.</p></li>
+<li><p>If the chain is <strong>irreducible and aperiodic</strong>, <span class="math notranslate nohighlight">\(\pi\)</span> exists and is unique.</p></li>
 <li><p>If the chain is <strong>reducible</strong>, there can be infinitely many stationary distributions; the solver returns one valid solution (minimum-norm least-squares solution) and reports the residual.</p></li>
 </ul>
 </section>
@@ -162,23 +165,23 @@ P^\top - I \\ 1^\top
 <h2>Hitting Times<a class="headerlink" href="#hitting-times" title="Link to this heading"></a></h2>
 <section id="id1">
 <h3>Definition<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
-<p>Given a target set $T \subseteq S$, the <strong>hitting time</strong> is the random variable</p>
+<p>Given a target set <span class="math notranslate nohighlight">\(T \subseteq S\)</span>, the <strong>hitting time</strong> is the random variable</p>
 <div class="math notranslate nohighlight">
 \[\tau_T = \inf \{ t \ge 0 : X_t \in T \}.\]</div>
-<p>We are interested in its expectation $h_i = \mathbb{E}[\tau_T \mid X_0 = s_i]$.</p>
+<p>We are interested in its expectation <span class="math notranslate nohighlight">\(h_i = \mathbb{E}[\tau_T \mid X_0 = s_i]\)</span>.</p>
 </section>
 <section id="formula">
 <h3>Formula<a class="headerlink" href="#formula" title="Link to this heading"></a></h3>
-<p>Partition the state space into target and non-target states. Let $Q$ be the submatrix of $P$ restricted to the non-target indices (i.e., transitions that stay outside $T$). The hitting time vector on those states solves</p>
+<p>Partition the state space into target and non-target states. Let <span class="math notranslate nohighlight">\(Q\)</span> be the submatrix of <span class="math notranslate nohighlight">\(P\)</span> restricted to the non-target indices (i.e., transitions that stay outside <span class="math notranslate nohighlight">\(T\)</span>). The hitting time vector on those states solves</p>
 <div class="math notranslate nohighlight">
 \[h = (I - Q)^{-1} \mathbf{1}.\]</div>
-<p>Target states have $h_i = 0$ by definition, since we have already “hit” $T$.</p>
+<p>Target states have <span class="math notranslate nohighlight">\(h_i = 0\)</span> by definition, since we have already “hit” <span class="math notranslate nohighlight">\(T\)</span>.</p>
 </section>
 <section id="assumptions-failure-modes">
 <h3>Assumptions &amp; Failure Modes<a class="headerlink" href="#assumptions-failure-modes" title="Link to this heading"></a></h3>
 <ul class="simple">
-<li><p>The matrix $I - Q$ must be invertible. If target states are unreachable from some starting state, the solver raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (and you can inspect your transition graph).</p></li>
-<li><p>Targets do <strong>not</strong> need to be absorbing. The expectation is computed for the first entrance into $T$, regardless of whether the process can subsequently leave.</p></li>
+<li><p>The matrix <span class="math notranslate nohighlight">\(I - Q\)</span> must be invertible. If target states are unreachable from some starting state, the solver raises <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> (and you can inspect your transition graph).</p></li>
+<li><p>Targets do <strong>not</strong> need to be absorbing. The expectation is computed for the first entrance into <span class="math notranslate nohighlight">\(T\)</span>, regardless of whether the process can subsequently leave.</p></li>
 </ul>
 </section>
 <section id="id2">
@@ -197,7 +200,7 @@ P^\top - I \\ 1^\top
 <h2>Absorption Probabilities &amp; Times<a class="headerlink" href="#absorption-probabilities-times" title="Link to this heading"></a></h2>
 <section id="setup">
 <h3>Setup<a class="headerlink" href="#setup" title="Link to this heading"></a></h3>
-<p>Split the states into <strong>transient</strong> indices $T$ and <strong>absorbing</strong> indices $A$. After optionally reordering states, the transition matrix takes the canonical block form</p>
+<p>Split the states into <strong>transient</strong> indices <span class="math notranslate nohighlight">\(T\)</span> and <strong>absorbing</strong> indices <span class="math notranslate nohighlight">\(A\)</span>. After optionally reordering states, the transition matrix takes the canonical block form</p>
 <div class="math notranslate nohighlight">
 \[\begin{split}P = \begin{bmatrix}
 Q &amp; R \\
@@ -205,9 +208,9 @@ Q &amp; R \\
 \end{bmatrix},\end{split}\]</div>
 <p>where:</p>
 <ul class="simple">
-<li><p>$Q$ captures transitions among transient states.</p></li>
-<li><p>$R$ captures transitions from transient to absorbing states.</p></li>
-<li><p>Absorbing states have identity rows ($P_{ii} = 1$, $P_{ij} = 0$ for $j \ne i$).</p></li>
+<li><p><span class="math notranslate nohighlight">\(Q\)</span> captures transitions among transient states.</p></li>
+<li><p><span class="math notranslate nohighlight">\(R\)</span> captures transitions from transient to absorbing states.</p></li>
+<li><p>Absorbing states have identity rows (<span class="math notranslate nohighlight">\(P_{ii} = 1\)</span>, <span class="math notranslate nohighlight">\(P_{ij} = 0\)</span> for <span class="math notranslate nohighlight">\(j \ne i\)</span>).</p></li>
 </ul>
 </section>
 <section id="fundamental-matrix">
@@ -215,21 +218,21 @@ Q &amp; R \\
 <p>The <strong>fundamental matrix</strong> is</p>
 <div class="math notranslate nohighlight">
 \[N = (I - Q)^{-1} = I + Q + Q^2 + \cdots,\]</div>
-<p>and encodes the expected number of visits: $N_{ij}$ is the expected number of times the chain is in transient state $j$ starting from transient state $i$.</p>
+<p>and encodes the expected number of visits: <span class="math notranslate nohighlight">\(N_{ij}\)</span> is the expected number of times the chain is in transient state <span class="math notranslate nohighlight">\(j\)</span> starting from transient state <span class="math notranslate nohighlight">\(i\)</span>.</p>
 </section>
 <section id="absorption-probabilities">
 <h3>Absorption Probabilities<a class="headerlink" href="#absorption-probabilities" title="Link to this heading"></a></h3>
 <p>The matrix of absorption probabilities is</p>
 <div class="math notranslate nohighlight">
 \[B = N R,\]</div>
-<p>where $B_{ik}$ is the probability that a trajectory starting in transient state $i$ is eventually absorbed in absorbing state $k$.</p>
+<p>where <span class="math notranslate nohighlight">\(B_{ik}\)</span> is the probability that a trajectory starting in transient state <span class="math notranslate nohighlight">\(i\)</span> is eventually absorbed in absorbing state <span class="math notranslate nohighlight">\(k\)</span>.</p>
 </section>
 <section id="expected-time-to-absorption">
 <h3>Expected Time to Absorption<a class="headerlink" href="#expected-time-to-absorption" title="Link to this heading"></a></h3>
 <p>The vector of expected absorption times is</p>
 <div class="math notranslate nohighlight">
 \[t = N \mathbf{1},\]</div>
-<p>which gives $\mathbb{E}[\tau_A \mid X_0 = s_i]$ for each transient state $i$.</p>
+<p>which gives <span class="math notranslate nohighlight">\(\mathbb{E}[\tau_A \mid X_0 = s_i]\)</span> for each transient state <span class="math notranslate nohighlight">\(i\)</span>.</p>
 </section>
 <section id="id3">
 <h3>Usage<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
@@ -254,11 +257,11 @@ Q &amp; R \\
 <h2>Numerical &amp; Modeling Assumptions<a class="headerlink" href="#numerical-modeling-assumptions" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
 <li><p><strong>Row-Stochastic Matrices</strong><br />
-All matrices must have non-negative entries with each row summing to one. The validators allow tiny numerical noise (atol $=10^{-8}$) to accommodate floating point rounding.</p></li>
+All matrices must have non-negative entries with each row summing to one. The validators allow tiny numerical noise (atol <span class="math notranslate nohighlight">\(=10^{-8}\)</span>) to accommodate floating point rounding.</p></li>
 <li><p><strong>Finite State Spaces</strong><br />
 The analytics layer currently targets finite state spaces, matching the core library design. Infinite-state processes (e.g., unbounded queues) need to be truncated before applying these formulas.</p></li>
 <li><p><strong>Singular Systems</strong><br />
-If $(I - Q)$ is singular (unreachable targets, non-absorbing structures), the routines raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> so you can diagnose the Markov graph rather than silently returning misleading numbers.</p></li>
+If <span class="math notranslate nohighlight">\((I - Q)\)</span> is singular (unreachable targets, non-absorbing structures), the routines raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> so you can diagnose the Markov graph rather than silently returning misleading numbers.</p></li>
 <li><p><strong>Label vs Index Inputs</strong><br />
 Every function accepts either integer indices or state labels. When you pass a <code class="docutils literal notranslate"><span class="pre">MarkovChain</span></code>, the labels come directly from its <code class="docutils literal notranslate"><span class="pre">StateSpace</span></code>. When you pass a raw matrix, supply <code class="docutils literal notranslate"><span class="pre">state_space=...</span></code> if you want to refer to states by label.</p></li>
 </ol>
@@ -278,17 +281,17 @@ Every function accepts either integer indices or state labels. When you pass a <
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">stationary_distribution(obj,</span> <span class="pre">*,</span> <span class="pre">method=&quot;lstsq&quot;,</span> <span class="pre">tol=1e-12)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">obj</span></code> = <code class="docutils literal notranslate"><span class="pre">MarkovChain</span></code> or <code class="docutils literal notranslate"><span class="pre">np.ndarray</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StationaryResult</span></code></p></td>
-<td><p>Solves $\pi P = \pi$ with normalization and residual check.</p></td>
+<td><p>Solves <span class="math notranslate nohighlight">\(\pi P = \pi\)</span> with normalization and residual check.</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">hitting_times(obj,</span> <span class="pre">targets,</span> <span class="pre">*,</span> <span class="pre">state_space=None)</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">targets</span></code> indices or labels</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">HittingTimesResult</span></code></p></td>
-<td><p>Computes $\mathbb{E}[\tau_T]$ via $(I-Q)^{-1} \mathbf{1}$.</p></td>
+<td><p>Computes <span class="math notranslate nohighlight">\(\mathbb{E}[\tau_T]\)</span> via <span class="math notranslate nohighlight">\((I-Q)^{-1} \mathbf{1}\)</span>.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">absorption_probabilities(obj,</span> <span class="pre">*,</span> <span class="pre">transient_states,</span> <span class="pre">absorbing_states,</span> <span class="pre">state_space=None)</span></code></p></td>
 <td><p>Partition states explicitly</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">AbsorptionResult</span></code></p></td>
-<td><p>Returns $B = (I-Q)^{-1}R$ and $t = (I-Q)^{-1}\mathbf{1}$.</p></td>
+<td><p>Returns <span class="math notranslate nohighlight">\(B = (I-Q)^{-1}R\)</span> and <span class="math notranslate nohighlight">\(t = (I-Q)^{-1}\mathbf{1}\)</span>.</p></td>
 </tr>
 </tbody>
 </table>

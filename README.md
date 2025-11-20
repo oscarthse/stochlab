@@ -1,5 +1,14 @@
 # stochlab
 
+<p align="center">
+  <img
+    src="docs/_static/logofinalpng-1.png"
+    alt="stochlab logo"
+    width="220"
+    style="background-color:#000000;padding:16px;border-radius:18px;"
+  />
+</p>
+
 *A compact library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.*
 
 ---
