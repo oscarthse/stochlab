@@ -59,7 +59,7 @@ class StateSpace:
     - Used for transition matrix indexing: P[i,j] = P(Xₜ₊₁ = sⱼ | Xₜ = sᵢ)
     """
 
-    # Ordered sequence of states (labels). Must be unique.
+    # Ordered sequence of states (labels). It must be unique.
     states: Sequence[State]
 
     # Optional precomputed mapping from state -> index.

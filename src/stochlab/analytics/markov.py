@@ -57,7 +57,7 @@ class HittingTimesResult:
 @dataclass(slots=True)
 class AbsorptionResult:
     """
-    Absorption probabilities and expected absorption times.
+    Absorption probabilities and expected absorption times
 
     Attributes
     ----------
@@ -147,7 +147,7 @@ def hitting_times(
     state_space: StateSpace | None = None,
 ) -> HittingTimesResult:
     """
-    Expected time to hit the target set for each starting state.
+    Expected time to hit the target set for each starting state
 
     Targets can be specified as indices or state labels (when either a
     MarkovChain is provided or `state_space` is supplied).

@@ -328,6 +328,7 @@ stochlab/
 - [ ] Antithetic variates, control variates
 - [ ] Parallel simulation support
 - [ ] Rare event simulation techniques
+- [ ] Rust implementation for faster performance
 
 ### Phase 4: Analytics & Theory
 - [x] Markov chain analytics (stationary distributions, hitting times, absorption)
@@ -338,6 +339,7 @@ stochlab/
 ### Phase 5: Visualization & Reporting
 - [ ] Interactive plots with Plotly
 - [ ] Jupyter notebook integration
+- [ ] Webapp integration
 - [ ] Statistical summaries and reports
 - [ ] Export to common formats (CSV, JSON, HDF5)
 
