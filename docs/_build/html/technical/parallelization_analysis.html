@@ -1,0 +1,990 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parallelization Strategy Analysis &mdash; stochlab 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=d4f5c460" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logofinalpng-1.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_reference.html">Quick Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/development_guide.html">stochlab – Developer Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">stochlab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Parallelization Strategy Analysis</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/technical/parallelization_analysis.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="parallelization-strategy-analysis">
+<h1>Parallelization Strategy Analysis<a class="headerlink" href="#parallelization-strategy-analysis" title="Link to this heading"></a></h1>
+<section id="the-problem">
+<h2>The Problem<a class="headerlink" href="#the-problem" title="Link to this heading"></a></h2>
+<p>We need to generate <code class="docutils literal notranslate"><span class="pre">n_paths</span></code> independent sample paths, where each call to <code class="docutils literal notranslate"><span class="pre">sample_path(T,</span> <span class="pre">x0)</span></code> is:</p>
+<ul class="simple">
+<li><p><strong>CPU-bound</strong> (random number generation, array operations)</p></li>
+<li><p><strong>Independent</strong> (no shared state)</p></li>
+<li><p><strong>Variable cost</strong> (some processes may be faster than others)</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="option-1-concurrent-futures-processpoolexecutor-recommended">
+<h2>Option 1: <code class="docutils literal notranslate"><span class="pre">concurrent.futures.ProcessPoolExecutor</span></code> ⭐ RECOMMENDED<a class="headerlink" href="#option-1-concurrent-futures-processpoolexecutor-recommended" title="Link to this heading"></a></h2>
+<section id="implementation">
+<h3>Implementation<a class="headerlink" href="#implementation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_simulate_process_pool</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parallelize using process pool with proper seed management.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_fn : Callable</span>
+<span class="sd">        Function that takes (seed) and returns a Path</span>
+<span class="sd">    n_paths : int</span>
+<span class="sd">        Number of paths to generate</span>
+<span class="sd">    base_seed : int</span>
+<span class="sd">        Base seed for reproducibility</span>
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        Number of worker processes (-1 = all CPUs)</span>
+<span class="sd">    show_progress : bool</span>
+<span class="sd">        Show progress bar</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="c1"># Generate independent seeds for each path</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="c1"># Submit all tasks</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span> <span class="n">i</span> 
+                   <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seeds</span><span class="p">)}</span>
+        
+        <span class="c1"># Collect results as they complete</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_paths</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Simulating&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>  <span class="c1"># This will raise if worker had exception</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="pros">
+<h3>Pros<a class="headerlink" href="#pros" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ <strong>True parallelism</strong> (bypasses GIL - Global Interpreter Lock)</p></li>
+<li><p>✅ <strong>Standard library</strong> (no dependencies)</p></li>
+<li><p>✅ <strong>Cross-platform</strong> (works on Windows, Linux, macOS)</p></li>
+<li><p>✅ <strong>Good performance</strong> for CPU-bound tasks</p></li>
+<li><p>✅ <strong>Error handling</strong> built-in (exceptions propagate)</p></li>
+<li><p>✅ <strong>Progress tracking</strong> easy with <code class="docutils literal notranslate"><span class="pre">as_completed</span></code></p></li>
+<li><p>✅ <strong>Resource management</strong> automatic (context manager)</p></li>
+</ul>
+</section>
+<section id="cons">
+<h3>Cons<a class="headerlink" href="#cons" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>⚠️ <strong>Startup overhead</strong> (~100-500ms for process spawning)</p></li>
+<li><p>⚠️ <strong>Pickling required</strong> (process must be serializable)</p></li>
+<li><p>⚠️ <strong>Memory overhead</strong> (separate process per worker)</p></li>
+</ul>
+</section>
+<section id="when-to-use">
+<h3>When to Use<a class="headerlink" href="#when-to-use" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>n_paths &gt; 100</strong> (overhead is amortized)</p></li>
+<li><p><strong>CPU-bound workloads</strong> (which Monte Carlo is)</p></li>
+<li><p><strong>Want zero dependencies</strong></p></li>
+</ul>
+</section>
+<section id="performance-characteristics">
+<h3>Performance Characteristics<a class="headerlink" href="#performance-characteristics" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Speedup</strong>: Near-linear until CPU cores saturated (6-8x on 8-core)</p></li>
+<li><p><strong>Overhead</strong>: ~200ms startup + ~1ms per task</p></li>
+<li><p><strong>Memory</strong>: ~50MB per worker process</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="option-2-multiprocessing-pool">
+<h2>Option 2: <code class="docutils literal notranslate"><span class="pre">multiprocessing.Pool</span></code><a class="headerlink" href="#option-2-multiprocessing-pool" title="Link to this heading"></a></h2>
+<section id="id1">
+<h3>Implementation<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Pool</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_simulate_mp_pool</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parallelize using multiprocessing.Pool.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="c1"># Generate independent seeds</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">pool</span><span class="p">:</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seeds</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h3>Pros<a class="headerlink" href="#id2" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ <strong>True parallelism</strong> (bypasses GIL)</p></li>
+<li><p>✅ <strong>Standard library</strong></p></li>
+<li><p>✅ <strong>Simpler API</strong> than ProcessPoolExecutor</p></li>
+<li><p>✅ <strong>Good for batch processing</strong></p></li>
+</ul>
+</section>
+<section id="id3">
+<h3>Cons<a class="headerlink" href="#id3" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>⚠️ <strong>Less flexible</strong> than <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code></p></li>
+<li><p>⚠️ <strong>No <code class="docutils literal notranslate"><span class="pre">as_completed()</span></code></strong> (harder for progress tracking)</p></li>
+<li><p>⚠️ <strong>map() blocks</strong> until all done (can’t stream results)</p></li>
+<li><p>⚠️ <strong>Same overhead</strong> as ProcessPoolExecutor</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>When to Use<a class="headerlink" href="#id4" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>When you want simpler code and don’t need progress tracking</p></li>
+<li><p>Batch processing without streaming</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="option-3-joblib-parallel">
+<h2>Option 3: <code class="docutils literal notranslate"><span class="pre">joblib.Parallel</span></code><a class="headerlink" href="#option-3-joblib-parallel" title="Link to this heading"></a></h2>
+<section id="id5">
+<h3>Implementation<a class="headerlink" href="#id5" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_simulate_joblib</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;loky&quot;</span>  <span class="c1"># or &quot;multiprocessing&quot;, &quot;threading&quot;</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Parallelize using joblib with optimized backend.</span>
+<span class="sd">    </span>
+<span class="sd">    joblib is optimized for NumPy arrays and scientific computing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Generate independent seeds</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)(</span>
+        <span class="n">delayed</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">)(</span><span class="n">seed</span><span class="p">)</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span>
+    <span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="id6">
+<h3>Pros<a class="headerlink" href="#id6" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ <strong>Optimized for NumPy</strong> (efficient array serialization)</p></li>
+<li><p>✅ <strong>Multiple backends</strong> (loky, multiprocessing, threading)</p></li>
+<li><p>✅ <strong>Better caching</strong> (memoization support)</p></li>
+<li><p>✅ <strong>Progress bar built-in</strong> (<code class="docutils literal notranslate"><span class="pre">verbose</span></code> parameter)</p></li>
+<li><p>✅ <strong>Batching optimization</strong> (automatic)</p></li>
+</ul>
+</section>
+<section id="id7">
+<h3>Cons<a class="headerlink" href="#id7" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>❌ <strong>External dependency</strong> (<code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">joblib</span></code>)</p></li>
+<li><p>⚠️ <strong>Less common</strong> than stdlib</p></li>
+<li><p>⚠️ <strong>More complex</strong> under the hood</p></li>
+</ul>
+</section>
+<section id="id8">
+<h3>When to Use<a class="headerlink" href="#id8" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Heavy NumPy usage</strong> (which we have!)</p></li>
+<li><p><strong>Need caching</strong> between runs</p></li>
+<li><p>OK with external dependency</p></li>
+</ul>
+</section>
+<section id="id9">
+<h3>Performance Characteristics<a class="headerlink" href="#id9" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Speedup</strong>: Similar to ProcessPoolExecutor (6-8x)</p></li>
+<li><p><strong>Overhead</strong>: Slightly lower due to NumPy optimization</p></li>
+<li><p><strong>Memory</strong>: More efficient for large NumPy arrays</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="option-4-threading-threadpoolexecutor">
+<h2>Option 4: <code class="docutils literal notranslate"><span class="pre">threading.ThreadPoolExecutor</span></code><a class="headerlink" href="#option-4-threading-threadpoolexecutor" title="Link to this heading"></a></h2>
+<section id="id10">
+<h3>Implementation<a class="headerlink" href="#id10" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_simulate_threads</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parallelize using threads (NOT recommended for CPU-bound).&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span> <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">):</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="id11">
+<h3>Pros<a class="headerlink" href="#id11" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ <strong>Low overhead</strong> (no process spawning)</p></li>
+<li><p>✅ <strong>Shared memory</strong> (no pickling)</p></li>
+<li><p>✅ <strong>Fast startup</strong> (&lt;1ms)</p></li>
+</ul>
+</section>
+<section id="id12">
+<h3>Cons<a class="headerlink" href="#id12" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>❌ <strong>GIL bottleneck</strong> (limited speedup for CPU-bound tasks)</p></li>
+<li><p>❌ <strong>Poor CPU utilization</strong> (1.2-1.5x speedup max)</p></li>
+</ul>
+</section>
+<section id="id13">
+<h3>When to Use<a class="headerlink" href="#id13" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>I/O-bound</strong> tasks only (network, disk)</p></li>
+<li><p><strong>NOT for Monte Carlo</strong> (CPU-bound)</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="option-5-ray-advanced">
+<h2>Option 5: Ray (Advanced)<a class="headerlink" href="#option-5-ray-advanced" title="Link to this heading"></a></h2>
+<section id="id14">
+<h3>Implementation<a class="headerlink" href="#id14" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ray</span>
+
+<span class="nd">@ray</span><span class="o">.</span><span class="n">remote</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_path_remote</span><span class="p">(</span><span class="n">process_state</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sample a path in a Ray worker.&quot;&quot;&quot;</span>
+    <span class="c1"># Reconstruct process from serialized state</span>
+    <span class="n">process</span> <span class="o">=</span> <span class="n">reconstruct_process</span><span class="p">(</span><span class="n">process_state</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">sample_path</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">parallel_simulate_ray</span><span class="p">(</span>
+    <span class="n">process</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parallelize using Ray for distributed computing.&quot;&quot;&quot;</span>
+    <span class="n">ray</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">ignore_reinit_error</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1"># Serialize process once</span>
+    <span class="n">process_state</span> <span class="o">=</span> <span class="n">serialize_process</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+    
+    <span class="c1"># Generate seeds</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="c1"># Dispatch to workers</span>
+    <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">sample_path_remote</span><span class="o">.</span><span class="n">remote</span><span class="p">(</span><span class="n">process_state</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">seeds</span>
+    <span class="p">]</span>
+    
+    <span class="c1"># Collect results</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="n">ray</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+    
+    <span class="n">ray</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="id15">
+<h3>Pros<a class="headerlink" href="#id15" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ <strong>Distributed</strong> (works across multiple machines)</p></li>
+<li><p>✅ <strong>Scales to clusters</strong></p></li>
+<li><p>✅ <strong>Advanced features</strong> (plasma store, actor model)</p></li>
+</ul>
+</section>
+<section id="id16">
+<h3>Cons<a class="headerlink" href="#id16" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>❌ <strong>Heavy dependency</strong> (large install)</p></li>
+<li><p>❌ <strong>Overkill</strong> for single-machine workloads</p></li>
+<li><p>❌ <strong>Complex setup</strong></p></li>
+</ul>
+</section>
+<section id="id17">
+<h3>When to Use<a class="headerlink" href="#id17" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Massive scale</strong> (millions of paths)</p></li>
+<li><p><strong>Have a cluster</strong> available</p></li>
+<li><p><strong>Future extension</strong> only</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="comparison-table">
+<h2>Comparison Table<a class="headerlink" href="#comparison-table" title="Link to this heading"></a></h2>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>ProcessPoolExecutor</p></th>
+<th class="head"><p>multiprocessing.Pool</p></th>
+<th class="head"><p>joblib</p></th>
+<th class="head"><p>ThreadPool</p></th>
+<th class="head"><p>Ray</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><strong>Speedup (8-core)</strong></p></td>
+<td><p>6-8x</p></td>
+<td><p>6-8x</p></td>
+<td><p>6-8x</p></td>
+<td><p>1.2x ❌</p></td>
+<td><p>6-8x</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Startup Time</strong></p></td>
+<td><p>200ms</p></td>
+<td><p>200ms</p></td>
+<td><p>150ms</p></td>
+<td><p>&lt;1ms</p></td>
+<td><p>~2s</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Dependencies</strong></p></td>
+<td><p>None ✅</p></td>
+<td><p>None ✅</p></td>
+<td><p>joblib</p></td>
+<td><p>None ✅</p></td>
+<td><p>ray</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Progress Tracking</strong></p></td>
+<td><p>Easy ✅</p></td>
+<td><p>Hard</p></td>
+<td><p>Built-in ✅</p></td>
+<td><p>Easy</p></td>
+<td><p>Hard</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Error Handling</strong></p></td>
+<td><p>Excellent</p></td>
+<td><p>Good</p></td>
+<td><p>Good</p></td>
+<td><p>Excellent</p></td>
+<td><p>Complex</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>NumPy Optimization</strong></p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes ✅</p></td>
+<td><p>N/A</p></td>
+<td><p>Yes</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Cross-Platform</strong></p></td>
+<td><p>Yes ✅</p></td>
+<td><p>Yes ✅</p></td>
+<td><p>Yes ✅</p></td>
+<td><p>Yes ✅</p></td>
+<td><p>Mostly</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Memory Efficient</strong></p></td>
+<td><p>Good</p></td>
+<td><p>Good</p></td>
+<td><p>Better ✅</p></td>
+<td><p>Best</p></td>
+<td><p>Good</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>Distributed</strong></p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>No</p></td>
+<td><p>Yes ✅</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>Learning Curve</strong></p></td>
+<td><p>Low ✅</p></td>
+<td><p>Low ✅</p></td>
+<td><p>Medium</p></td>
+<td><p>Low ✅</p></td>
+<td><p>High</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<hr class="docutils" />
+<section id="recommendation-hybrid-approach">
+<h2>Recommendation: Hybrid Approach<a class="headerlink" href="#recommendation-hybrid-approach" title="Link to this heading"></a></h2>
+<section id="primary-concurrent-futures-processpoolexecutor">
+<h3>Primary: <code class="docutils literal notranslate"><span class="pre">concurrent.futures.ProcessPoolExecutor</span></code><a class="headerlink" href="#primary-concurrent-futures-processpoolexecutor" title="Link to this heading"></a></h3>
+<p><strong>Use as default</strong> because:</p>
+<ol class="arabic simple">
+<li><p>No dependencies</p></li>
+<li><p>Excellent error handling</p></li>
+<li><p>Easy progress tracking with <code class="docutils literal notranslate"><span class="pre">as_completed()</span></code></p></li>
+<li><p>Good enough performance</p></li>
+</ol>
+</section>
+<section id="optional-joblib-with-fallback">
+<h3>Optional: <code class="docutils literal notranslate"><span class="pre">joblib</span></code> (with fallback)<a class="headerlink" href="#optional-joblib-with-fallback" title="Link to this heading"></a></h3>
+<p><strong>Allow as opt-in</strong> for power users:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">joblib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+    <span class="n">JOBLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">JOBLIB_AVAILABLE</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;auto&quot;</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    backend : str</span>
+<span class="sd">        &quot;auto&quot; - use joblib if available, else ProcessPoolExecutor</span>
+<span class="sd">        &quot;stdlib&quot; - force ProcessPoolExecutor</span>
+<span class="sd">        &quot;joblib&quot; - force joblib (error if not installed)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;joblib&quot;</span> <span class="ow">or</span> <span class="p">(</span><span class="n">backend</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span> <span class="ow">and</span> <span class="n">JOBLIB_AVAILABLE</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate_joblib</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate_stdlib</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="detailed-implementation-strategy">
+<h2>Detailed Implementation Strategy<a class="headerlink" href="#detailed-implementation-strategy" title="Link to this heading"></a></h2>
+<section id="seed-management-critical">
+<h3>1. Seed Management (Critical!)<a class="headerlink" href="#seed-management-critical" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_path_seeds</span><span class="p">(</span><span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate statistically independent seeds for parallel workers.</span>
+<span class="sd">    </span>
+<span class="sd">    Uses SeedSequence to ensure:</span>
+<span class="sd">    - Reproducibility (same base_seed -&gt; same path seeds)</span>
+<span class="sd">    - Independence (paths don&#39;t share random state)</span>
+<span class="sd">    - Quality (proper entropy distribution)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">child_seeds</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">child_seeds</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Why SeedSequence?</strong></p>
+<ul class="simple">
+<li><p>✅ Designed for parallel workloads</p></li>
+<li><p>✅ Guarantees statistical independence</p></li>
+<li><p>✅ Reproducible (same base seed → same children)</p></li>
+<li><p>✅ NumPy recommended approach (since 1.17)</p></li>
+</ul>
+</section>
+<section id="batch-size-optimization">
+<h3>2. Batch Size Optimization<a class="headerlink" href="#batch-size-optimization" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">optimal_batch_size</span><span class="p">(</span><span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate optimal batch size to balance:</span>
+<span class="sd">    - Communication overhead (favor larger batches)</span>
+<span class="sd">    - Load balancing (favor smaller batches)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Heuristic: aim for 4-10 batches per worker</span>
+    <span class="c1"># This allows dynamic load balancing without too much overhead</span>
+    
+    <span class="k">if</span> <span class="n">n_paths</span> <span class="o">&lt;</span> <span class="n">n_jobs</span> <span class="o">*</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="c1"># Few paths: one per worker</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    
+    <span class="c1"># Many paths: batch to ~4-10 batches per worker</span>
+    <span class="n">target_batches_per_worker</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="n">n_paths</span> <span class="o">//</span> <span class="p">(</span><span class="n">n_jobs</span> <span class="o">*</span> <span class="n">target_batches_per_worker</span><span class="p">)</span>
+    
+    <span class="c1"># Clamp to reasonable range</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="progress-tracking">
+<h3>3. Progress Tracking<a class="headerlink" href="#progress-tracking" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">simulate_with_progress</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">seeds</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Execute with optional progress bar.&quot;&quot;&quot;</span>
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span> <span class="n">i</span> 
+                   <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seeds</span><span class="p">)}</span>
+        
+        <span class="c1"># Wrap iterator with progress bar if requested</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+                    <span class="n">iterator</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="n">n_paths</span><span class="p">,</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Simulating paths&quot;</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;path&quot;</span><span class="p">,</span>
+                    <span class="n">ncols</span><span class="o">=</span><span class="mi">80</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="c1"># Fallback to simple progress</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating </span><span class="si">{</span><span class="n">n_paths</span><span class="si">}</span><span class="s2"> paths...&quot;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Re-raise with context</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Path simulation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+<section id="error-handling">
+<h3>4. Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">robust_sample_path</span><span class="p">(</span><span class="n">process</span><span class="p">,</span> <span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wrapper that catches and reports errors with context.</span>
+<span class="sd">    </span>
+<span class="sd">    Critical for debugging parallel failures.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">process</span><span class="o">.</span><span class="n">sample_path</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="c1"># Include seed for reproducibility</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;Failed to sample path with seed=</span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">, T=</span><span class="si">{</span><span class="n">T</span><span class="si">}</span><span class="s2">, x0=</span><span class="si">{</span><span class="n">x0</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-efficient-batching">
+<h3>5. Memory-Efficient Batching<a class="headerlink" href="#memory-efficient-batching" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">simulate_batched</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Yield paths in batches to avoid memory buildup.</span>
+<span class="sd">    </span>
+<span class="sd">    Useful for streaming or when n_paths is very large.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">all_seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_paths</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+        <span class="n">batch_seeds</span> <span class="o">=</span> <span class="n">all_seeds</span><span class="p">[</span><span class="n">i</span> <span class="p">:</span> <span class="n">i</span> <span class="o">+</span> <span class="n">batch_size</span><span class="p">]</span>
+        
+        <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span> 
+                      <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">batch_seeds</span><span class="p">]</span>
+            <span class="n">batch_paths</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">]</span>
+        
+        <span class="k">yield</span> <span class="n">batch_paths</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="concrete-api-design">
+<h2>Concrete API Design<a class="headerlink" href="#concrete-api-design" title="Link to this heading"></a></h2>
+<section id="user-facing-api">
+<h3>User-Facing API<a class="headerlink" href="#user-facing-api" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MonteCarloEngine</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">simulate</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">x0</span><span class="p">:</span> <span class="n">State</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResult</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run Monte Carlo simulation.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parallel : bool</span>
+<span class="sd">            Enable parallel processing (default: False)</span>
+<span class="sd">        n_jobs : int</span>
+<span class="sd">            Number of parallel workers (-1 = all cores)</span>
+<span class="sd">        backend : str</span>
+<span class="sd">            &quot;auto&quot; - use joblib if available, else stdlib</span>
+<span class="sd">            &quot;stdlib&quot; - force ProcessPoolExecutor</span>
+<span class="sd">            &quot;joblib&quot; - force joblib (must be installed)</span>
+<span class="sd">        seed : int, optional</span>
+<span class="sd">            Random seed for reproducibility</span>
+<span class="sd">        show_progress : bool</span>
+<span class="sd">            Show progress bar (requires tqdm)</span>
+<span class="sd">        batch_size : int, optional</span>
+<span class="sd">            Paths per batch (auto-computed if None)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Implementation...</span>
+</pre></div>
+</div>
+</section>
+<section id="internal-implementation">
+<h3>Internal Implementation<a class="headerlink" href="#internal-implementation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">_simulate_parallel_stdlib</span><span class="p">(</span>
+    <span class="bp">self</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="n">State</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Internal: parallel simulation using stdlib.&quot;&quot;&quot;</span>
+    
+    <span class="c1"># 1. Generate independent seeds</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="n">generate_path_seeds</span><span class="p">(</span><span class="n">seed</span><span class="p">,</span> <span class="n">n_paths</span><span class="p">)</span>
+    
+    <span class="c1"># 2. Create worker function (closure over process params)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_one</span><span class="p">(</span><span class="n">path_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">path_seed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">process</span><span class="o">.</span><span class="n">sample_path</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    
+    <span class="c1"># 3. Execute in parallel</span>
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_one</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span> <span class="n">i</span> 
+                   <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seeds</span><span class="p">)}</span>
+        
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">iterator</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="n">n_paths</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">pass</span>
+        
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">())</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-tuning-guidelines">
+<h2>Performance Tuning Guidelines<a class="headerlink" href="#performance-tuning-guidelines" title="Link to this heading"></a></h2>
+<section id="when-to-use-parallel">
+<h3>When to Use Parallel<a class="headerlink" href="#when-to-use-parallel" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">should_parallelize</span><span class="p">(</span><span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Heuristic: parallel overhead is worth it if total work &gt; 1 second.</span>
+<span class="sd">    </span>
+<span class="sd">    Rough estimate: ~1ms per path * T</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">estimated_work_ms</span> <span class="o">=</span> <span class="n">n_paths</span> <span class="o">*</span> <span class="n">T</span> <span class="o">*</span> <span class="mf">0.001</span>
+    <span class="n">parallel_overhead_ms</span> <span class="o">=</span> <span class="mi">200</span>  <span class="c1"># process spawning</span>
+    
+    <span class="c1"># Need at least 2x speedup to justify overhead</span>
+    <span class="k">return</span> <span class="n">estimated_work_ms</span> <span class="o">&gt;</span> <span class="n">parallel_overhead_ms</span> <span class="o">*</span> <span class="n">n_jobs</span>
+</pre></div>
+</div>
+</section>
+<section id="optimal-n-jobs">
+<h3>Optimal n_jobs<a class="headerlink" href="#optimal-n-jobs" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">optimal_n_jobs</span><span class="p">(</span><span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Choose number of workers based on workload.</span>
+<span class="sd">    </span>
+<span class="sd">    - Too few: underutilize CPU</span>
+<span class="sd">    - Too many: overhead dominates</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">max_workers</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="k">if</span> <span class="n">n_paths</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>  <span class="c1"># overhead not worth it</span>
+    <span class="k">elif</span> <span class="n">n_paths</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">max_workers</span><span class="p">)</span>  <span class="c1"># limited parallelism</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">max_workers</span>  <span class="c1"># full parallelism</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary-recommendation">
+<h2>Summary: Recommendation<a class="headerlink" href="#summary-recommendation" title="Link to this heading"></a></h2>
+<section id="phase-1-mvp">
+<h3>Phase 1 (MVP)<a class="headerlink" href="#phase-1-mvp" title="Link to this heading"></a></h3>
+<p><strong>Use <code class="docutils literal notranslate"><span class="pre">concurrent.futures.ProcessPoolExecutor</span></code></strong></p>
+<ul class="simple">
+<li><p>✅ Zero dependencies</p></li>
+<li><p>✅ Good enough performance (6-8x)</p></li>
+<li><p>✅ Easy to implement and test</p></li>
+<li><p>✅ Excellent error handling</p></li>
+</ul>
+</section>
+<section id="phase-2-optimization">
+<h3>Phase 2 (Optimization)<a class="headerlink" href="#phase-2-optimization" title="Link to this heading"></a></h3>
+<p><strong>Add optional <code class="docutils literal notranslate"><span class="pre">joblib</span></code> support</strong></p>
+<ul class="simple">
+<li><p>✅ Better for heavy NumPy users</p></li>
+<li><p>✅ Built-in progress bar</p></li>
+<li><p>✅ Fallback to stdlib if not installed</p></li>
+</ul>
+</section>
+<section id="future-distributed">
+<h3>Future (Distributed)<a class="headerlink" href="#future-distributed" title="Link to this heading"></a></h3>
+<p><strong>Consider Ray/Dask</strong> for massive scale</p>
+<ul class="simple">
+<li><p>Only if users request cluster support</p></li>
+<li><p>Phase 3+</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="example-implementation">
+<h2>Example Implementation<a class="headerlink" href="#example-implementation" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># src/stochlab/mc/executor.py</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">concurrent.futures</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">execute_parallel</span><span class="p">(</span>
+    <span class="n">sample_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Path</span><span class="p">],</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Execute sample_fn in parallel with proper seed management.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sample_fn : Callable[[int], Path]</span>
+<span class="sd">        Function that takes a seed and returns a Path</span>
+<span class="sd">    n_paths : int</span>
+<span class="sd">        Number of paths to generate</span>
+<span class="sd">    base_seed : int</span>
+<span class="sd">        Base seed for reproducibility</span>
+<span class="sd">    n_jobs : int</span>
+<span class="sd">        Number of parallel workers (-1 = all CPUs)</span>
+<span class="sd">    show_progress : bool</span>
+<span class="sd">        Show tqdm progress bar if available</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list[Path]</span>
+<span class="sd">        Generated paths (order may differ from sequential)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Auto-detect optimal workers</span>
+    <span class="k">if</span> <span class="n">n_jobs</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_jobs</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="ow">or</span> <span class="mi">1</span>
+    
+    <span class="c1"># Generate independent seeds using SeedSequence</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">seeds</span> <span class="o">=</span> <span class="p">[</span><span class="n">child</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)]</span>
+    
+    <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+    
+    <span class="c1"># Execute with ProcessPoolExecutor</span>
+    <span class="k">with</span> <span class="n">ProcessPoolExecutor</span><span class="p">(</span><span class="n">max_workers</span><span class="o">=</span><span class="n">n_jobs</span><span class="p">)</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+        <span class="c1"># Submit all tasks</span>
+        <span class="n">futures</span> <span class="o">=</span> <span class="p">{</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">sample_fn</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span> <span class="n">i</span> 
+                   <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seed</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seeds</span><span class="p">)}</span>
+        
+        <span class="c1"># Collect as they complete</span>
+        <span class="n">iterator</span> <span class="o">=</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">)</span>
+        
+        <span class="c1"># Optional progress bar</span>
+        <span class="k">if</span> <span class="n">show_progress</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+                <span class="n">iterator</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span>
+                    <span class="n">iterator</span><span class="p">,</span>
+                    <span class="n">total</span><span class="o">=</span><span class="n">n_paths</span><span class="p">,</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Simulating&quot;</span><span class="p">,</span>
+                    <span class="n">unit</span><span class="o">=</span><span class="s2">&quot;path&quot;</span>
+                <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulating </span><span class="si">{</span><span class="n">n_paths</span><span class="si">}</span><span class="s2"> paths (install tqdm for progress bar)...&quot;</span><span class="p">)</span>
+        
+        <span class="c1"># Gather results</span>
+        <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">iterator</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span>
+                <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="c1"># Clean up remaining futures on error</span>
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">futures</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulation failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+    
+    <span class="k">return</span> <span class="n">paths</span>
+</pre></div>
+</div>
+<p>This is production-ready, maintainable, and performant! 🚀</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, stochlab contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

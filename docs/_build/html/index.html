@@ -9,7 +9,7 @@
   <title>stochlab Documentation &mdash; stochlab 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95114af3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=d4f5c460" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -43,12 +43,23 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="quick_reference.html">Quick Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing/development_guide.html">stochlab – Developer Guide</a></li>
 </ul>
 
         </div>
@@ -79,13 +90,14 @@
 <h1>stochlab Documentation<a class="headerlink" href="#stochlab-documentation" title="Link to this heading"></a></h1>
 <p><strong>stochlab</strong> is a Python library for discrete-time stochastic processes, Monte Carlo simulation, and analytics.</p>
 <div class="toctree-wrapper compound">
-<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#your-first-simulation">Your First Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#understanding-the-output">Understanding the Output</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#core-concepts">Core Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getting_started.html#monte-carlo-simulation">Monte Carlo Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getting_started.html#next-steps">Next Steps</a></li>
 </ul>
 </li>
@@ -95,14 +107,37 @@
 <li class="toctree-l2"><a class="reference internal" href="quick_reference.html#key-methods">Key Methods</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="analytics.html#stationary-distribution">Stationary Distribution</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analytics.html#hitting-times">Hitting Times</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analytics.html#absorption-probabilities-times">Absorption Probabilities &amp; Times</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analytics.html#numerical-modeling-assumptions">Numerical &amp; Modeling Assumptions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="analytics.html#api-cheatsheet">API Cheatsheet</a></li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/monte_carlo.html">Monte Carlo Simulation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#core-concepts">Core Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#features">Features</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#advanced-usage">Advanced Usage</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#performance-tips">Performance Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#common-patterns">Common Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#troubleshooting">Troubleshooting</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#api-reference">API Reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/monte_carlo.html#summary">Summary</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="guides/analytics.html">Analytics Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guides/analytics.html#stationary-distribution">Stationary Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/analytics.html#hitting-times">Hitting Times</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/analytics.html#absorption-probabilities-times">Absorption Probabilities &amp; Times</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/analytics.html#numerical-modeling-assumptions">Numerical &amp; Modeling Assumptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guides/analytics.html#api-cheatsheet">API Cheatsheet</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="api/index.html#stochlab.core.Path"><code class="docutils literal notranslate"><span class="pre">Path</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/index.html#stochlab.core.SimulationResult"><code class="docutils literal notranslate"><span class="pre">SimulationResult</span></code></a></li>
@@ -111,6 +146,20 @@
 <li class="toctree-l2"><a class="reference internal" href="api/index.html#stochlab.models.MM1Queue"><code class="docutils literal notranslate"><span class="pre">MM1Queue</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/index.html#stochlab.models.MarkovChain"><code class="docutils literal notranslate"><span class="pre">MarkovChain</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="api/index.html#stochlab.models.RandomWalk"><code class="docutils literal notranslate"><span class="pre">RandomWalk</span></code></a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing/development_guide.html">stochlab – Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#git-branching-workflow">1. Git &amp; Branching Workflow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#testing-protocol-pytest">2. Testing Protocol (pytest)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#code-quality-formatting-linting-types">3. Code Quality: Formatting, Linting, Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#documentation-expectations">4. Documentation Expectations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#adding-a-new-feature-checklist">5. Adding a New Feature: Checklist</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing/development_guide.html#pr-pre-merge-checklist">6. PR / Pre-merge Checklist</a></li>
 </ul>
 </li>
 </ul>

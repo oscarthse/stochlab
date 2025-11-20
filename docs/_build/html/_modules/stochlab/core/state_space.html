@@ -8,6 +8,7 @@
   <title>stochlab.core.state_space &mdash; stochlab 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/custom.css?v=d4f5c460" />
 
   
       <script src="../../../_static/jquery.js?v=5d32c60e"></script>
@@ -28,8 +29,9 @@
 
           
           
-          <a href="../../../index.html" class="icon icon-home">
-            stochlab
+          <a href="../../../index.html">
+            
+              <img src="../../../_static/logofinalpng-1.png" class="logo" alt="Logo"/>
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -39,11 +41,23 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../quick_reference.html">Quick Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing/development_guide.html">stochlab – Developer Guide</a></li>
 </ul>
 
         </div>
@@ -134,7 +148,7 @@
 <span class="sd">    - Used for transition matrix indexing: P[i,j] = P(Xₜ₊₁ = sⱼ | Xₜ = sᵢ)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="c1"># Ordered sequence of states (labels). Must be unique.</span>
+    <span class="c1"># Ordered sequence of states (labels). It must be unique.</span>
     <span class="n">states</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">State</span><span class="p">]</span>
 
     <span class="c1"># Optional precomputed mapping from state -&gt; index.</span>

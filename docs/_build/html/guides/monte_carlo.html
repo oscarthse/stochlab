@@ -1,0 +1,744 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monte Carlo Simulation Guide &mdash; stochlab 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=d4f5c460" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Analytics Module" href="analytics.html" />
+    <link rel="prev" title="Quick Reference" href="../quick_reference.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logofinalpng-1.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_reference.html">Quick Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Monte Carlo Simulation Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#quick-start">Quick Start</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#core-concepts">Core Concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#what-is-monte-carlo-simulation">What is Monte Carlo Simulation?</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-simulation">1. Parallel Simulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#memory-efficient-modes">2. Memory-Efficient Modes</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#paths-mode-default">Paths Mode (Default)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#values-mode">Values Mode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stats-mode">Stats Mode</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#reproducible-seeds">3. Reproducible Seeds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#batch-size-control">4. Batch Size Control</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#progress-tracking">5. Progress Tracking</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-usage">Advanced Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#estimating-expectations">Estimating Expectations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#complex-estimators">Complex Estimators</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#working-with-results">Working with Results</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-tips">Performance Tips</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#use-parallel-for-large-simulations">1. Use Parallel for Large Simulations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#choose-the-right-mode">2. Choose the Right Mode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#don-t-over-parallelize">3. Don’t Over-Parallelize</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#batch-size-matters">4. Batch Size Matters</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#common-patterns">Common Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-1-probability-estimation">Pattern 1: Probability Estimation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-2-expected-value">Pattern 2: Expected Value</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-3-hitting-time-distribution">Pattern 3: Hitting Time Distribution</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-4-comparing-processes">Pattern 4: Comparing Processes</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#issue-parallel-simulation-crashes-on-windows">Issue: Parallel simulation crashes on Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#issue-out-of-memory">Issue: Out of memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#issue-slower-with-parallelization">Issue: Slower with parallelization</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#issue-results-not-reproducible">Issue: Results not reproducible</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#montecarloengine">MonteCarloEngine</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#simulate">simulate()</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#estimate">estimate()</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#mcstatistics">MCStatistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#returnmode">ReturnMode</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/development_guide.html">stochlab – Developer Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">stochlab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Monte Carlo Simulation Guide</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/monte_carlo.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="monte-carlo-simulation-guide">
+<h1>Monte Carlo Simulation Guide<a class="headerlink" href="#monte-carlo-simulation-guide" title="Link to this heading"></a></h1>
+<p>The Monte Carlo engine in <code class="docutils literal notranslate"><span class="pre">stochlab</span></code> provides high-performance parallel simulation with advanced features for large-scale experiments.</p>
+<section id="quick-start">
+<h2>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkovChain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.mc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonteCarloEngine</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Create a process</span>
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]])</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">MarkovChain</span><span class="o">.</span><span class="n">from_transition_matrix</span><span class="p">([</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create engine and simulate</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Simulated </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">paths</span><span class="p">)</span><span class="si">}</span><span class="s2"> paths&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="core-concepts">
+<h2>Core Concepts<a class="headerlink" href="#core-concepts" title="Link to this heading"></a></h2>
+<section id="what-is-monte-carlo-simulation">
+<h3>What is Monte Carlo Simulation?<a class="headerlink" href="#what-is-monte-carlo-simulation" title="Link to this heading"></a></h3>
+<p>Monte Carlo simulation estimates quantities by:</p>
+<ol class="arabic simple">
+<li><p>Running a stochastic process many times (generating sample paths)</p></li>
+<li><p>Computing a statistic on each path</p></li>
+<li><p>Averaging the results</p></li>
+</ol>
+<p><strong>Example</strong>: Estimate the probability that a Markov chain reaches state B by time 100.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">reaches_b</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="s2">&quot;B&quot;</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">states</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span>
+    <span class="n">estimator_fn</span><span class="o">=</span><span class="n">reaches_b</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;P(reach B) = </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;95% CI: </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">confidence_interval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="features">
+<h2>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h2>
+<section id="parallel-simulation">
+<h3>1. Parallel Simulation<a class="headerlink" href="#parallel-simulation" title="Link to this heading"></a></h3>
+<p>Run simulations in parallel to leverage multiple CPU cores:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sequential (uses 1 core)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Parallel (uses all cores)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Parallel with specific number of workers</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Performance</strong>: Expect 6-8x speedup on an 8-core machine.</p>
+<p><strong>When to use parallel</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_paths</span> <span class="pre">&gt;</span> <span class="pre">100</span></code> (overhead is amortized)</p></li>
+<li><p>Long time horizons (T is large)</p></li>
+<li><p>Complex processes (each path takes time)</p></li>
+</ul>
+<p><strong>When NOT to use parallel</strong>:</p>
+<ul class="simple">
+<li><p>Small simulations (<code class="docutils literal notranslate"><span class="pre">n_paths</span> <span class="pre">&lt;</span> <span class="pre">50</span></code>)</p></li>
+<li><p>Very fast processes (overhead dominates)</p></li>
+<li><p>Memory-constrained environments</p></li>
+</ul>
+</section>
+<section id="memory-efficient-modes">
+<h3>2. Memory-Efficient Modes<a class="headerlink" href="#memory-efficient-modes" title="Link to this heading"></a></h3>
+<p>Choose how much data to store based on your needs:</p>
+<section id="paths-mode-default">
+<h4>Paths Mode (Default)<a class="headerlink" href="#paths-mode-default" title="Link to this heading"></a></h4>
+<p>Store complete path trajectories:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;paths&quot;</span><span class="p">)</span>
+
+<span class="c1"># Access full paths</span>
+<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">paths</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">times</span><span class="p">)</span>   <span class="c1"># [0, 1, 2, ..., 100]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">)</span>  <span class="c1"># [&#39;A&#39;, &#39;B&#39;, &#39;A&#39;, ...]</span>
+</pre></div>
+</div>
+<p><strong>Use when</strong>: You need complete trajectory information for visualization or detailed analysis.</p>
+<p><strong>Memory</strong>: ~10-20 KB per path (depends on path length).</p>
+</section>
+<section id="values-mode">
+<h4>Values Mode<a class="headerlink" href="#values-mode" title="Link to this heading"></a></h4>
+<p>Store only final state values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;values&quot;</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Access final values</span>
+<span class="n">final_states</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">paths</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Use when</strong>: You only care about endpoints (e.g., steady-state analysis).</p>
+<p><strong>Memory</strong>: ~8 bytes per path (<strong>90% reduction</strong>).</p>
+</section>
+<section id="stats-mode">
+<h4>Stats Mode<a class="headerlink" href="#stats-mode" title="Link to this heading"></a></h4>
+<p>Store only aggregated statistics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;stats&quot;</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Statistics are in metadata</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s2">&quot;statistics&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p><strong>Use when</strong>: Estimating expectations and don’t need individual paths.</p>
+<p><strong>Memory</strong>: ~100 bytes total (<strong>99% reduction</strong>).</p>
+</section>
+</section>
+<section id="reproducible-seeds">
+<h3>3. Reproducible Seeds<a class="headerlink" href="#reproducible-seeds" title="Link to this heading"></a></h3>
+<p>Monte Carlo simulations are reproducible when you specify a seed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run 1</span>
+<span class="n">result1</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Run 2 (identical results)</span>
+<span class="n">result2</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Verify</span>
+<span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">states</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">states</span><span class="p">)</span> 
+           <span class="k">for</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">result1</span><span class="o">.</span><span class="n">paths</span><span class="p">,</span> <span class="n">result2</span><span class="o">.</span><span class="n">paths</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><strong>How it works</strong>: Uses NumPy’s <code class="docutils literal notranslate"><span class="pre">SeedSequence</span></code> to generate statistically independent seeds for each path while maintaining reproducibility.</p>
+</section>
+<section id="batch-size-control">
+<h3>4. Batch Size Control<a class="headerlink" href="#batch-size-control" title="Link to this heading"></a></h3>
+<p>The engine automatically computes optimal batch sizes, but you can override:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Automatic (recommended)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Manual control</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span>  <span class="c1"># Paths per batch</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Batch size trade-offs</strong>:</p>
+<ul class="simple">
+<li><p><strong>Smaller batches</strong> (50-100): Better load balancing, more overhead</p></li>
+<li><p><strong>Larger batches</strong> (500-1000): Lower overhead, worse load balancing</p></li>
+<li><p><strong>Optimal</strong> (100-200): Balance between the two</p></li>
+</ul>
+<p>The automatic calculation targets 4-10 batches per worker, which works well for most cases.</p>
+</section>
+<section id="progress-tracking">
+<h3>5. Progress Tracking<a class="headerlink" href="#progress-tracking" title="Link to this heading"></a></h3>
+<p>Show progress bars for long-running simulations (requires <code class="docutils literal notranslate"><span class="pre">tqdm</span></code>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># Requires: pip install tqdm</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> is not installed, the simulation continues without a progress bar.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="advanced-usage">
+<h2>Advanced Usage<a class="headerlink" href="#advanced-usage" title="Link to this heading"></a></h2>
+<section id="estimating-expectations">
+<h3>Estimating Expectations<a class="headerlink" href="#estimating-expectations" title="Link to this heading"></a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">estimate()</span></code> method computes expectations with confidence intervals:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">estimator</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute some quantity on the path.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span>  <span class="c1"># Indicator function</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span>
+    <span class="n">estimator_fn</span><span class="o">=</span><span class="n">estimator</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">confidence_level</span><span class="o">=</span><span class="mf">0.95</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Estimate: </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Std Error: </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;95% CI: [</span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">confidence_interval</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">confidence_interval</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Output</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Estimate</span><span class="p">:</span> <span class="mf">0.5431</span>
+<span class="n">Std</span> <span class="n">Error</span><span class="p">:</span> <span class="mf">0.0050</span>
+<span class="mi">95</span><span class="o">%</span> <span class="n">CI</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.5333</span><span class="p">,</span> <span class="mf">0.5529</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="complex-estimators">
+<h3>Complex Estimators<a class="headerlink" href="#complex-estimators" title="Link to this heading"></a></h3>
+<p>You can compute any statistic:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Average state occupancy</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">avg_b_occupancy</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">s</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">)</span>
+
+<span class="c1"># First passage time</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">first_passage_time</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>  <span class="c1"># Never reached</span>
+
+<span class="c1"># Path length until absorption</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">absorption_time</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</section>
+<section id="working-with-results">
+<h3>Working with Results<a class="headerlink" href="#working-with-results" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Basic info</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Number of paths: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">paths</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Parallel: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="p">[</span><span class="s1">&#39;parallel&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Batches used: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;n_batches&#39;</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;N/A&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Convert to DataFrame</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="c1">#    path_id  t  time state</span>
+<span class="c1"># 0        0  0     0     A</span>
+<span class="c1"># 1        0  1     1     B</span>
+<span class="c1"># 2        0  2     2     B</span>
+<span class="c1"># ...</span>
+
+<span class="c1"># Analyze state distribution at specific time</span>
+<span class="n">dist</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">state_distribution</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">dist</span><span class="p">)</span>  <span class="c1"># {&#39;A&#39;: 0.42, &#39;B&#39;: 0.58}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-tips">
+<h2>Performance Tips<a class="headerlink" href="#performance-tips" title="Link to this heading"></a></h2>
+<section id="use-parallel-for-large-simulations">
+<h3>1. Use Parallel for Large Simulations<a class="headerlink" href="#use-parallel-for-large-simulations" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Sequential: ~10 seconds</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Parallel (8 cores): ~1.5 seconds (6-7x speedup)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="choose-the-right-mode">
+<h3>2. Choose the Right Mode<a class="headerlink" href="#choose-the-right-mode" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># If you need full paths</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;paths&quot;</span><span class="p">)</span>
+<span class="c1"># Memory: ~170 MB</span>
+
+<span class="c1"># If you only need final values</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;values&quot;</span><span class="p">)</span>
+<span class="c1"># Memory: ~80 KB (2000x reduction!)</span>
+
+<span class="c1"># If you only need statistics</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;stats&quot;</span><span class="p">)</span>
+<span class="c1"># Memory: ~1 KB (170,000x reduction!)</span>
+</pre></div>
+</div>
+</section>
+<section id="don-t-over-parallelize">
+<h3>3. Don’t Over-Parallelize<a class="headerlink" href="#don-t-over-parallelize" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># BAD: Too few paths for parallelism</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Overhead dominates, slower than sequential!</span>
+
+<span class="c1"># GOOD: Enough paths to amortize overhead</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Overhead is negligible, get full speedup</span>
+</pre></div>
+</div>
+<p><strong>Rule of thumb</strong>: Use <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> when <code class="docutils literal notranslate"><span class="pre">n_paths</span> <span class="pre">&gt;</span> <span class="pre">100</span></code>.</p>
+</section>
+<section id="batch-size-matters">
+<h3>4. Batch Size Matters<a class="headerlink" href="#batch-size-matters" title="Link to this heading"></a></h3>
+<p>The default automatic batch sizing works well, but for very large simulations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># For maximum throughput</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">1000</span>  <span class="c1"># Larger batches = lower overhead</span>
+<span class="p">)</span>
+
+<span class="c1"># For better progress tracking</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>  <span class="c1"># More frequent updates</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="common-patterns">
+<h2>Common Patterns<a class="headerlink" href="#common-patterns" title="Link to this heading"></a></h2>
+<section id="pattern-1-probability-estimation">
+<h3>Pattern 1: Probability Estimation<a class="headerlink" href="#pattern-1-probability-estimation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Estimate P(event occurs)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">event_occurs</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">some_condition</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">event_occurs</span><span class="p">,</span> <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;P(event) = </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-2-expected-value">
+<h3>Pattern 2: Expected Value<a class="headerlink" href="#pattern-2-expected-value" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Estimate E[X_T]</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">final_value</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">final_value</span><span class="p">,</span> <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;E[X_100] = </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-3-hitting-time-distribution">
+<h3>Pattern 3: Hitting Time Distribution<a class="headerlink" href="#pattern-3-hitting-time-distribution" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Estimate distribution of hitting times</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">hitting_times</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">paths</span><span class="p">:</span>
+    <span class="n">hit_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hit_indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">hitting_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hit_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean hitting time: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">hitting_times</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Median hitting time: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">hitting_times</span><span class="p">)</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-4-comparing-processes">
+<h3>Pattern 4: Comparing Processes<a class="headerlink" href="#pattern-4-comparing-processes" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compare two different processes</span>
+<span class="n">engine1</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process1</span><span class="p">)</span>
+<span class="n">engine2</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process2</span><span class="p">)</span>
+
+<span class="n">result1</span> <span class="o">=</span> <span class="n">engine1</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">result2</span> <span class="o">=</span> <span class="n">engine2</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Compare distributions</span>
+<span class="n">dist1</span> <span class="o">=</span> <span class="n">result1</span><span class="o">.</span><span class="n">state_distribution</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">dist2</span> <span class="o">=</span> <span class="n">result2</span><span class="o">.</span><span class="n">state_distribution</span><span class="p">(</span><span class="n">t</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="troubleshooting">
+<h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading"></a></h2>
+<section id="issue-parallel-simulation-crashes-on-windows">
+<h3>Issue: Parallel simulation crashes on Windows<a class="headerlink" href="#issue-parallel-simulation-crashes-on-windows" title="Link to this heading"></a></h3>
+<p><strong>Symptom</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="ne">RuntimeError</span><span class="p">:</span> <span class="n">An</span> <span class="n">attempt</span> <span class="n">has</span> <span class="n">been</span> <span class="n">made</span> <span class="n">to</span> <span class="n">start</span> <span class="n">a</span> <span class="n">new</span> <span class="n">process</span><span class="o">...</span>
+</pre></div>
+</div>
+<p><strong>Solution</strong>: Wrap your code in <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is required on Windows due to how multiprocessing spawns processes.</p>
+</section>
+<section id="issue-out-of-memory">
+<h3>Issue: Out of memory<a class="headerlink" href="#issue-out-of-memory" title="Link to this heading"></a></h3>
+<p><strong>Symptom</strong>: System runs out of RAM with large simulations.</p>
+<p><strong>Solution 1</strong>: Use <code class="docutils literal notranslate"><span class="pre">values</span></code> or <code class="docutils literal notranslate"><span class="pre">stats</span></code> mode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;values&quot;</span><span class="p">,</span>  <span class="c1"># Much lower memory</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Solution 2</strong>: Process in chunks:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">chunk</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+        <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+        <span class="n">T</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+        <span class="n">seed</span><span class="o">=</span><span class="mi">42</span> <span class="o">+</span> <span class="n">i</span><span class="p">,</span>
+        <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">)</span>
+    <span class="c1"># Process chunk immediately</span>
+    <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">process_chunk</span><span class="p">(</span><span class="n">chunk</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="issue-slower-with-parallelization">
+<h3>Issue: Slower with parallelization<a class="headerlink" href="#issue-slower-with-parallelization" title="Link to this heading"></a></h3>
+<p><strong>Symptom</strong>: <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> is slower than <code class="docutils literal notranslate"><span class="pre">parallel=False</span></code>.</p>
+<p><strong>Causes</strong>:</p>
+<ol class="arabic simple">
+<li><p><strong>Too few paths</strong>: Overhead dominates</p></li>
+<li><p><strong>Very fast processes</strong>: Each path takes &lt;1ms</p></li>
+<li><p><strong>Small time horizon</strong>: T &lt; 10</p></li>
+</ol>
+<p><strong>Solution</strong>: Use <code class="docutils literal notranslate"><span class="pre">parallel=False</span></code> for small simulations, or increase <code class="docutils literal notranslate"><span class="pre">n_paths</span></code>.</p>
+</section>
+<section id="issue-results-not-reproducible">
+<h3>Issue: Results not reproducible<a class="headerlink" href="#issue-results-not-reproducible" title="Link to this heading"></a></h3>
+<p><strong>Symptom</strong>: Same seed gives different results.</p>
+<p><strong>Cause</strong>: Not specifying a seed, or process has internal randomness not controlled by RNG.</p>
+<p><strong>Solution</strong>: Always specify <code class="docutils literal notranslate"><span class="pre">seed</span></code> parameter:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>  <span class="c1"># Reproducible</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
+<section id="montecarloengine">
+<h3>MonteCarloEngine<a class="headerlink" href="#montecarloengine" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">:</span> <span class="n">StochasticProcess</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create a Monte Carlo engine for a stochastic process.</p>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">process</span></code>: Any <code class="docutils literal notranslate"><span class="pre">StochasticProcess</span></code> (MarkovChain, RandomWalk, MM1Queue, etc.)</p></li>
+</ul>
+<section id="simulate">
+<h4>simulate()<a class="headerlink" href="#simulate" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="n">State</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">batch_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;paths&quot;</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">SimulationResult</span>
+</pre></div>
+</div>
+<p>Run Monte Carlo simulation.</p>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_paths</span></code>: Number of paths to simulate (must be &gt; 0)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code>: Time horizon for each path</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: Initial state (optional, uses process default if None)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel</span></code>: Enable parallel execution (default: False)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_jobs</span></code>: Number of workers, -1 = all CPUs (default: -1)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">batch_size</span></code>: Paths per batch (default: auto-computed)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mode</span></code>: Return mode - “paths”, “values”, or “stats” (default: “paths”)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code>: Random seed for reproducibility (default: random)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">show_progress</span></code>: Show progress bar (default: False, requires tqdm)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>: Additional arguments passed to <code class="docutils literal notranslate"><span class="pre">process.sample_path()</span></code></p></li>
+</ul>
+<p><strong>Returns</strong>: <code class="docutils literal notranslate"><span class="pre">SimulationResult</span></code> with paths and metadata</p>
+</section>
+<section id="estimate">
+<h4>estimate()<a class="headerlink" href="#estimate" title="Link to this heading"></a></h4>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">estimate</span><span class="p">(</span>
+    <span class="n">estimator_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Path</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="n">State</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.95</span><span class="p">,</span>
+    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MCStatistics</span>
+</pre></div>
+</div>
+<p>Estimate E[f(X)] using Monte Carlo.</p>
+<p><strong>Parameters</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">estimator_fn</span></code>: Function that takes a Path and returns a scalar</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">n_paths</span></code>: Number of Monte Carlo samples</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T</span></code>: Time horizon</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">x0</span></code>: Initial state (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">parallel</span></code>: Use parallel execution (default: False)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confidence_level</span></code>: Confidence level for CI (default: 0.95)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">seed</span></code>: Random seed (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>: Additional arguments for <code class="docutils literal notranslate"><span class="pre">sample_path()</span></code></p></li>
+</ul>
+<p><strong>Returns</strong>: <code class="docutils literal notranslate"><span class="pre">MCStatistics</span></code> with mean, std, confidence interval, etc.</p>
+</section>
+</section>
+<section id="mcstatistics">
+<h3>MCStatistics<a class="headerlink" href="#mcstatistics" title="Link to this heading"></a></h3>
+<p>Result from <code class="docutils literal notranslate"><span class="pre">estimate()</span></code> containing:</p>
+<p><strong>Attributes</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">n_paths</span></code>: Number of paths simulated</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mean</span></code>: Estimated expectation</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">std</span></code>: Standard deviation of estimator</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stderr</span></code>: Standard error (std / sqrt(n))</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confidence_interval</span></code>: Tuple (lower, upper)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">confidence_level</span></code>: Confidence level (e.g., 0.95)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">variance_reduction_factor</span></code>: VRF if variance reduction used</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">metadata</span></code>: Additional information</p></li>
+</ul>
+</section>
+<section id="returnmode">
+<h3>ReturnMode<a class="headerlink" href="#returnmode" title="Link to this heading"></a></h3>
+<p>Enum for simulation return modes:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ReturnMode.PATHS</span></code>: Full Path objects</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ReturnMode.VALUES</span></code>: Final values only</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ReturnMode.STATS</span></code>: Aggregated statistics only</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="further-reading">
+<h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Design Document</strong>: <code class="docutils literal notranslate"><span class="pre">docs/MONTE_CARLO_DESIGN.md</span></code> - Comprehensive design details</p></li>
+<li><p><strong>Parallelization Analysis</strong>: <code class="docutils literal notranslate"><span class="pre">docs/PARALLELIZATION_ANALYSIS.md</span></code> - Performance deep dive</p></li>
+<li><p><strong>Implementation Summary</strong>: <code class="docutils literal notranslate"><span class="pre">docs/MC_IMPLEMENTATION_SUMMARY.md</span></code> - What was built</p></li>
+<li><p><strong>Demo Script</strong>: <code class="docutils literal notranslate"><span class="pre">demo_monte_carlo.py</span></code> - Runnable examples</p></li>
+</ul>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p>The Monte Carlo engine provides:</p>
+<p>✓ <strong>High performance</strong>: 6-8x speedup with parallelization<br />
+✓ <strong>Memory efficiency</strong>: 90-99% reduction with values/stats modes<br />
+✓ <strong>Reproducibility</strong>: SeedSequence for quality randomness<br />
+✓ <strong>Ease of use</strong>: Simple API with sensible defaults<br />
+✓ <strong>Flexibility</strong>: Works with any stochastic process</p>
+<p>For most users, this is all you need:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Happy simulating! 🎲</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../quick_reference.html" class="btn btn-neutral float-left" title="Quick Reference" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="analytics.html" class="btn btn-neutral float-right" title="Analytics Module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, stochlab contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

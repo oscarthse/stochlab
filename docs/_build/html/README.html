@@ -1,0 +1,385 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stochlab Documentation &mdash; stochlab 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=d4f5c460" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=01f34227"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logofinalpng-1.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quick_reference.html">Quick Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing/development_guide.html">stochlab – Developer Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">stochlab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Stochlab Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/README.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="stochlab-documentation">
+<h1>Stochlab Documentation<a class="headerlink" href="#stochlab-documentation" title="Link to this heading"></a></h1>
+<p>Complete documentation for the stochlab library.</p>
+<section id="documentation-structure">
+<h2>📚 Documentation Structure<a class="headerlink" href="#documentation-structure" title="Link to this heading"></a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>docs/
+├── getting_started.md                 # Quick introduction
+├── quick_reference.md                 # Common operations cheat sheet
+├── guides/                            # User guides
+│   ├── monte_carlo.md                 # Complete Monte Carlo guide ⭐
+│   └── analytics.md                   # Markov chain analytics
+├── api/                               # API reference
+│   └── index.rst                      # Auto-generated documentation
+├── technical/                         # Technical documentation
+│   ├── monte_carlo_design.md          # MC engine design doc
+│   ├── parallelization_analysis.md    # Parallel execution deep dive
+│   └── implementation_summary.md      # What was built and why
+└── contributing/                      # Developer documentation
+    └── development_guide.md           # Contributing guidelines
+</pre></div>
+</div>
+<section id="quick-access">
+<h3>Quick Access<a class="headerlink" href="#quick-access" title="Link to this heading"></a></h3>
+<p><strong>Getting Started</strong>:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a></strong> - Quick introduction and basic usage</p></li>
+<li><p><strong><a class="reference internal" href="quick_reference.html"><span class="std std-doc">Quick Reference</span></a></strong> - Common operations cheat sheet</p></li>
+</ul>
+<p><strong>User Guides</strong>:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="guides/monte_carlo.html"><span class="std std-doc">Monte Carlo Guide</span></a></strong> ⭐ - Complete guide to parallel simulation</p></li>
+<li><p><strong><a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics Guide</span></a></strong> - Markov chain analytics and theory</p></li>
+</ul>
+<p><strong>API Documentation</strong>:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="api/index.html"><span class="std std-doc">API Reference</span></a></strong> - Complete API documentation (auto-generated from docstrings)</p></li>
+</ul>
+<p><strong>Technical Documentation</strong>:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="technical/monte_carlo_design.html"><span class="std std-doc">Monte Carlo Design</span></a></strong> - Comprehensive design document</p></li>
+<li><p><strong><a class="reference internal" href="technical/parallelization_analysis.html"><span class="std std-doc">Parallelization Analysis</span></a></strong> - Deep dive into parallel execution</p></li>
+<li><p><strong><a class="reference internal" href="technical/implementation_summary.html"><span class="std std-doc">Implementation Summary</span></a></strong> - What was built and why</p></li>
+</ul>
+<p><strong>Contributing</strong>:</p>
+<ul class="simple">
+<li><p><strong><a class="reference internal" href="contributing/development_guide.html"><span class="std std-doc">Development Guide</span></a></strong> - Contributing guidelines and workflow</p></li>
+</ul>
+</section>
+</section>
+<section id="quick-links">
+<h2>🚀 Quick Links<a class="headerlink" href="#quick-links" title="Link to this heading"></a></h2>
+<section id="for-users">
+<h3>For Users<a class="headerlink" href="#for-users" title="Link to this heading"></a></h3>
+<p><strong>New to stochlab?</strong> Start here:</p>
+<ol class="arabic simple">
+<li><p>Read <a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a></p></li>
+<li><p>Try the examples in <code class="docutils literal notranslate"><span class="pre">demo_random_walk.py</span></code> and <code class="docutils literal notranslate"><span class="pre">demo_monte_carlo.py</span></code></p></li>
+<li><p>Browse the <a class="reference internal" href="quick_reference.html"><span class="std std-doc">Quick Reference</span></a></p></li>
+</ol>
+<p><strong>Want high-performance simulation?</strong></p>
+<ul class="simple">
+<li><p>Read the <a class="reference internal" href="guides/monte_carlo.html"><span class="std std-doc">Monte Carlo Guide</span></a></p></li>
+<li><p>Learn about parallel execution, memory modes, and optimization</p></li>
+</ul>
+<p><strong>Need analytics?</strong></p>
+<ul class="simple">
+<li><p>Check out the <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics Guide</span></a></p></li>
+<li><p>Learn to compute stationary distributions, hitting times, and more</p></li>
+</ul>
+</section>
+<section id="for-developers">
+<h3>For Developers<a class="headerlink" href="#for-developers" title="Link to this heading"></a></h3>
+<p><strong>Contributing to stochlab?</strong></p>
+<ol class="arabic simple">
+<li><p>Read the <a class="reference internal" href="contributing/development_guide.html"><span class="std std-doc">Development Guide</span></a></p></li>
+<li><p>Review the technical docs to understand the architecture</p></li>
+<li><p>Run tests with <code class="docutils literal notranslate"><span class="pre">pytest</span></code></p></li>
+</ol>
+<p><strong>Understanding the codebase?</strong></p>
+<ul class="simple">
+<li><p><strong>Monte Carlo Engine</strong>: See <a class="reference internal" href="technical/monte_carlo_design.html"><span class="std std-doc">monte_carlo_design.md</span></a> and <a class="reference internal" href="technical/parallelization_analysis.html"><span class="std std-doc">parallelization_analysis.md</span></a></p></li>
+<li><p><strong>Core Architecture</strong>: See docstrings in <code class="docutils literal notranslate"><span class="pre">src/stochlab/core/</span></code></p></li>
+<li><p><strong>Models</strong>: See docstrings in <code class="docutils literal notranslate"><span class="pre">src/stochlab/models/</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="documentation-by-topic">
+<h2>📖 Documentation By Topic<a class="headerlink" href="#documentation-by-topic" title="Link to this heading"></a></h2>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Creating processes: <a class="reference internal" href="getting_started.html#models"><span class="std std-ref">Getting Started § Models</span></a></p></li>
+<li><p>Simulating paths: <a class="reference internal" href="getting_started.html#process-interface"><span class="std std-ref">Getting Started § Process Interface</span></a></p></li>
+<li><p>Working with results: <a class="reference internal" href="quick_reference.html"><span class="std std-doc">Quick Reference § Results</span></a></p></li>
+</ul>
+</section>
+<section id="monte-carlo-simulation">
+<h3>Monte Carlo Simulation<a class="headerlink" href="#monte-carlo-simulation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Quick start</strong>: <a class="reference internal" href="guides/monte_carlo.html#quick-start"><span class="std std-ref">Monte Carlo Guide § Quick Start</span></a></p></li>
+<li><p><strong>Parallel execution</strong>: <a class="reference internal" href="guides/monte_carlo.html#1-parallel-simulation"><span class="std std-ref">Monte Carlo Guide § Parallel Simulation</span></a></p></li>
+<li><p><strong>Memory optimization</strong>: <a class="reference internal" href="guides/monte_carlo.html#2-memory-efficient-modes"><span class="std std-ref">Monte Carlo Guide § Memory-Efficient Modes</span></a></p></li>
+<li><p><strong>Reproducibility</strong>: <a class="reference internal" href="guides/monte_carlo.html#3-reproducible-seeds"><span class="std std-ref">Monte Carlo Guide § Reproducible Seeds</span></a></p></li>
+<li><p><strong>Estimating expectations</strong>: <a class="reference internal" href="guides/monte_carlo.html#estimating-expectations"><span class="std std-ref">Monte Carlo Guide § Estimating Expectations</span></a></p></li>
+<li><p><strong>Performance tips</strong>: <a class="reference internal" href="guides/monte_carlo.html#performance-tips"><span class="std std-ref">Monte Carlo Guide § Performance Tips</span></a></p></li>
+<li><p><strong>Troubleshooting</strong>: <a class="reference internal" href="guides/monte_carlo.html#troubleshooting"><span class="std std-ref">Monte Carlo Guide § Troubleshooting</span></a></p></li>
+</ul>
+</section>
+<section id="analytics">
+<h3>Analytics<a class="headerlink" href="#analytics" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Stationary distributions: <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics § Stationary Distribution</span></a></p></li>
+<li><p>Hitting times: <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics § Hitting Times</span></a></p></li>
+<li><p>Absorption probabilities: <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics § Absorption</span></a></p></li>
+</ul>
+</section>
+<section id="technical-details">
+<h3>Technical Details<a class="headerlink" href="#technical-details" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Why batching matters</strong>: <a class="reference internal" href="technical/parallelization_analysis.html"><span class="std std-doc">Parallelization Analysis § Batching</span></a></p></li>
+<li><p><strong>Worker initialization</strong>: <a class="reference internal" href="technical/parallelization_analysis.html"><span class="std std-doc">Parallelization Analysis § Worker Init</span></a></p></li>
+<li><p><strong>Seed management</strong>: <a class="reference internal" href="technical/monte_carlo_design.html"><span class="std std-doc">Monte Carlo Design § Seeding</span></a></p></li>
+<li><p><strong>Return modes</strong>: <a class="reference internal" href="technical/monte_carlo_design.html"><span class="std std-doc">Monte Carlo Design § Return Modes</span></a></p></li>
+<li><p><strong>Performance analysis</strong>: <a class="reference internal" href="technical/implementation_summary.html"><span class="std std-doc">Implementation Summary § Performance</span></a></p></li>
+</ul>
+</section>
+</section>
+<section id="finding-documentation">
+<h2>🔍 Finding Documentation<a class="headerlink" href="#finding-documentation" title="Link to this heading"></a></h2>
+<section id="by-feature">
+<h3>By Feature<a class="headerlink" href="#by-feature" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Feature</p></th>
+<th class="head"><p>Documentation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Basic simulation</p></td>
+<td><p><a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>Parallel Monte Carlo</p></td>
+<td><p><a class="reference internal" href="guides/monte_carlo.html"><span class="std std-doc">Monte Carlo Guide</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Markov chain analytics</p></td>
+<td><p><a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>API reference</p></td>
+<td><p><a class="reference internal" href="api/index.html"><span class="std std-doc">API Docs</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>Contributing</p></td>
+<td><p><a class="reference internal" href="contributing/development_guide.html"><span class="std std-doc">Development Guide</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="by-process-type">
+<h3>By Process Type<a class="headerlink" href="#by-process-type" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Process</p></th>
+<th class="head"><p>Documentation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>MarkovChain</p></td>
+<td><p><a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a>, <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>RandomWalk</p></td>
+<td><p><a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>MM1Queue</p></td>
+<td><p><a class="reference internal" href="getting_started.html"><span class="std std-doc">Getting Started</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="by-use-case">
+<h3>By Use Case<a class="headerlink" href="#by-use-case" title="Link to this heading"></a></h3>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>Use Case</p></th>
+<th class="head"><p>Documentation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>“I want to run 1M simulations fast”</p></td>
+<td><p><a class="reference internal" href="guides/monte_carlo.html#1-parallel-simulation"><span class="std std-ref">Monte Carlo Guide § Parallel</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>“I’m running out of memory”</p></td>
+<td><p><a class="reference internal" href="guides/monte_carlo.html#2-memory-efficient-modes"><span class="std std-ref">Monte Carlo Guide § Memory Modes</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>“I need reproducible results”</p></td>
+<td><p><a class="reference internal" href="guides/monte_carlo.html#3-reproducible-seeds"><span class="std std-ref">Monte Carlo Guide § Seeds</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>“How do I estimate probabilities?”</p></td>
+<td><p><a class="reference internal" href="guides/monte_carlo.html#estimating-expectations"><span class="std std-ref">Monte Carlo Guide § Estimating</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p>“I want steady-state distribution”</p></td>
+<td><p><a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Analytics § Stationary</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p>“I need to contribute code”</p></td>
+<td><p><a class="reference internal" href="contributing/development_guide.html"><span class="std std-doc">Development Guide</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+<section id="documentation-quality">
+<h2>📝 Documentation Quality<a class="headerlink" href="#documentation-quality" title="Link to this heading"></a></h2>
+<p>All user-facing code includes:</p>
+<p>✅ <strong>Comprehensive docstrings</strong> - Every public class and function<br />
+✅ <strong>Type hints</strong> - Full type coverage<br />
+✅ <strong>Examples</strong> - Docstring examples for key functions<br />
+✅ <strong>User guides</strong> - Step-by-step tutorials<br />
+✅ <strong>API reference</strong> - Auto-generated from docstrings<br />
+✅ <strong>Technical docs</strong> - Design decisions and architecture</p>
+</section>
+<section id="building-documentation">
+<h2>🛠️ Building Documentation<a class="headerlink" href="#building-documentation" title="Link to this heading"></a></h2>
+<p>To build the HTML documentation locally:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>docs
+make<span class="w"> </span>html
+open<span class="w"> </span>_build/html/index.html
+</pre></div>
+</div>
+<p>Or using <code class="docutils literal notranslate"><span class="pre">sphinx-build</span></code> directly:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sphinx-build<span class="w"> </span>-b<span class="w"> </span>html<span class="w"> </span>docs<span class="w"> </span>docs/_build/html
+</pre></div>
+</div>
+</section>
+<section id="documentation-coverage">
+<h2>📊 Documentation Coverage<a class="headerlink" href="#documentation-coverage" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Core modules</strong>: 100% documented</p></li>
+<li><p><strong>Monte Carlo engine</strong>: 100% documented</p></li>
+<li><p><strong>Models</strong>: 100% documented</p></li>
+<li><p><strong>Analytics</strong>: 100% documented</p></li>
+<li><p><strong>User guides</strong>: Complete</p></li>
+<li><p><strong>Technical docs</strong>: Complete</p></li>
+<li><p><strong>Examples</strong>: Complete</p></li>
+</ul>
+</section>
+<section id="documentation-goals">
+<h2>🎯 Documentation Goals<a class="headerlink" href="#documentation-goals" title="Link to this heading"></a></h2>
+<p>Our documentation aims to be:</p>
+<ol class="arabic simple">
+<li><p><strong>Accessible</strong> - Clear for beginners, detailed for experts</p></li>
+<li><p><strong>Complete</strong> - Cover all features and edge cases</p></li>
+<li><p><strong>Practical</strong> - Plenty of examples and use cases</p></li>
+<li><p><strong>Up-to-date</strong> - Updated with every feature addition</p></li>
+<li><p><strong>Searchable</strong> - Easy to find what you need</p></li>
+</ol>
+</section>
+<section id="documentation-principles">
+<h2>💡 Documentation Principles<a class="headerlink" href="#documentation-principles" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><strong>Show, don’t just tell</strong> - Every concept has a code example</p></li>
+<li><p><strong>Multiple levels</strong> - Quick start, user guide, API reference, technical deep dive</p></li>
+<li><p><strong>Real use cases</strong> - Examples solve real problems</p></li>
+<li><p><strong>Performance guidance</strong> - When to use what</p></li>
+<li><p><strong>Troubleshooting</strong> - Common issues and solutions</p></li>
+</ul>
+<hr class="docutils" />
+<p><strong>Happy reading!</strong> 📖</p>
+<p>If you find any documentation gaps or errors, please <a class="reference external" href="https://github.com/yourusername/stochlab/issues">open an issue</a>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, stochlab contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

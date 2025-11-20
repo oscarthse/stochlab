@@ -1,0 +1,791 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monte Carlo Engine Design Document &mdash; stochlab 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/custom.css?v=d4f5c460" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=01f34227"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logofinalpng-1.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quick_reference.html">Quick Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/development_guide.html">stochlab – Developer Guide</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">stochlab</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Monte Carlo Engine Design Document</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/technical/monte_carlo_design.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section class="tex2jax_ignore mathjax_ignore" id="monte-carlo-engine-design-document">
+<h1>Monte Carlo Engine Design Document<a class="headerlink" href="#monte-carlo-engine-design-document" title="Link to this heading"></a></h1>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>This document outlines the design for a high-performance, user-friendly Monte Carlo simulation engine for <code class="docutils literal notranslate"><span class="pre">stochlab</span></code>. The engine will provide advanced features like variance reduction, parallelization, and efficient memory management while maintaining a simple API.</p>
+</section>
+<hr class="docutils" />
+<section id="core-requirements">
+<h2>1. Core Requirements<a class="headerlink" href="#core-requirements" title="Link to this heading"></a></h2>
+<section id="functional-requirements">
+<h3>1.1 Functional Requirements<a class="headerlink" href="#functional-requirements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Variance Reduction</strong>: Antithetic variates, control variates, importance sampling</p></li>
+<li><p><strong>Parallelization</strong>: Multi-core simulation with proper seed management</p></li>
+<li><p><strong>Streaming</strong>: Memory-efficient simulation for large experiments</p></li>
+<li><p><strong>Progress Tracking</strong>: Real-time feedback for long-running simulations</p></li>
+<li><p><strong>Statistical Analysis</strong>: Confidence intervals, convergence diagnostics</p></li>
+<li><p><strong>Reproducibility</strong>: Deterministic results with seed control</p></li>
+<li><p><strong>Batching</strong>: Efficient batch processing of simulations</p></li>
+</ul>
+</section>
+<section id="non-functional-requirements">
+<h3>1.2 Non-Functional Requirements<a class="headerlink" href="#non-functional-requirements" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Performance</strong>: 10-100x speedup with parallelization</p></li>
+<li><p><strong>Memory Efficiency</strong>: O(1) memory for streaming mode</p></li>
+<li><p><strong>Backward Compatibility</strong>: Existing <code class="docutils literal notranslate"><span class="pre">simulate_paths()</span></code> continues to work</p></li>
+<li><p><strong>Type Safety</strong>: Full type hints for IDE support</p></li>
+<li><p><strong>Documentation</strong>: Clear examples and API docs</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="architecture-design">
+<h2>2. Architecture Design<a class="headerlink" href="#architecture-design" title="Link to this heading"></a></h2>
+<section id="module-structure">
+<h3>2.1 Module Structure<a class="headerlink" href="#module-structure" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>src/stochlab/mc/
+├── __init__.py              # Public API exports
+├── engine.py                # MonteCarloEngine (main entry point)
+├── executor.py              # Parallel execution strategies
+├── variance_reduction.py    # Variance reduction techniques
+├── statistics.py            # Statistical analysis utilities
+├── streaming.py             # Memory-efficient streaming
+└── seeding.py               # Reproducible random number generation
+</pre></div>
+</div>
+</section>
+<section id="integration-with-existing-architecture">
+<h3>2.2 Integration with Existing Architecture<a class="headerlink" href="#integration-with-existing-architecture" title="Link to this heading"></a></h3>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>┌─────────────────────────────────────────┐
+│      StochasticProcess (ABC)            │
+│  ┌───────────────────────────────────┐  │
+│  │ sample_path(T, x0) -&gt; Path        │  │
+│  │ simulate_paths(n, T) -&gt; Result    │  │ ← Keep for simple use
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+                    │
+                    │ uses
+                    ▼
+┌─────────────────────────────────────────┐
+│      MonteCarloEngine                    │
+│  ┌───────────────────────────────────┐  │
+│  │ simulate(...)                      │  │ ← New advanced API
+│  │ with_variance_reduction(...)       │  │
+│  │ with_parallel(...)                 │  │
+│  │ with_streaming(...)                │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+                    │
+                    │ returns
+                    ▼
+┌─────────────────────────────────────────┐
+│      SimulationResult / MCResult         │
+│  ┌───────────────────────────────────┐  │
+│  │ paths: list[Path]                  │  │
+│  │ statistics: MCStatistics           │  │ ← Enhanced result
+│  │ metadata: dict                     │  │
+│  └───────────────────────────────────┘  │
+└─────────────────────────────────────────┘
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="api-design">
+<h2>3. API Design<a class="headerlink" href="#api-design" title="Link to this heading"></a></h2>
+<section id="simple-api-keep-existing">
+<h3>3.1 Simple API (Keep Existing)<a class="headerlink" href="#simple-api-keep-existing" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Current API - remains unchanged</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">process</span><span class="o">.</span><span class="n">simulate_paths</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="advanced-api-new">
+<h3>3.2 Advanced API (New)<a class="headerlink" href="#advanced-api-new" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.mc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonteCarloEngine</span>
+
+<span class="c1"># Basic usage - similar to existing</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># With variance reduction</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">variance_reduction</span><span class="o">=</span><span class="s2">&quot;antithetic&quot;</span>  <span class="c1"># reduces variance by using complementary paths</span>
+<span class="p">)</span>
+
+<span class="c1"># With parallelization</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span>  <span class="c1"># use all cores</span>
+<span class="p">)</span>
+
+<span class="c1"># With streaming (memory-efficient)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate_streaming</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+    <span class="n">aggregate_fn</span><span class="o">=</span><span class="k">lambda</span> <span class="n">paths</span><span class="p">:</span> <span class="n">compute_statistic</span><span class="p">(</span><span class="n">paths</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Fluent/Builder pattern (most flexible)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_variance_reduction</span><span class="p">(</span><span class="s2">&quot;antithetic&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_confidence_level</span><span class="p">(</span><span class="mf">0.95</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="progress-tracking">
+<h3>3.3 Progress Tracking<a class="headerlink" href="#progress-tracking" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.mc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonteCarloEngine</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tqdm</span><span class="w"> </span><span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="c1"># Built-in progress bar</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">show_progress</span><span class="o">=</span><span class="kc">True</span>  <span class="c1"># uses tqdm</span>
+<span class="p">)</span>
+
+<span class="c1"># Custom progress callback</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">progress_callback</span><span class="p">(</span><span class="n">n_completed</span><span class="p">,</span> <span class="n">n_total</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Progress: </span><span class="si">{</span><span class="n">n_completed</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_total</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">progress_callback</span><span class="o">=</span><span class="n">progress_callback</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-optimizations">
+<h2>4. Performance Optimizations<a class="headerlink" href="#performance-optimizations" title="Link to this heading"></a></h2>
+<section id="parallelization-strategy">
+<h3>4.1 Parallelization Strategy<a class="headerlink" href="#parallelization-strategy" title="Link to this heading"></a></h3>
+<p><strong>Option 1: <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code> (Recommended)</strong></p>
+<ul class="simple">
+<li><p>✅ Standard library (no dependencies)</p></li>
+<li><p>✅ Works with both threads and processes</p></li>
+<li><p>✅ Easy to use</p></li>
+<li><p>✅ Good for I/O and CPU-bound tasks</p></li>
+</ul>
+<p><strong>Option 2: <code class="docutils literal notranslate"><span class="pre">multiprocessing</span></code></strong></p>
+<ul class="simple">
+<li><p>✅ True parallelism (bypasses GIL)</p></li>
+<li><p>⚠️ Overhead for process spawning</p></li>
+<li><p>⚠️ Pickle limitations</p></li>
+</ul>
+<p><strong>Option 3: <code class="docutils literal notranslate"><span class="pre">joblib</span></code></strong></p>
+<ul class="simple">
+<li><p>✅ Optimized for NumPy arrays</p></li>
+<li><p>✅ Better caching</p></li>
+<li><p>❌ External dependency</p></li>
+</ul>
+<p><strong>Decision</strong>: Use <code class="docutils literal notranslate"><span class="pre">concurrent.futures.ProcessPoolExecutor</span></code> as default, allow <code class="docutils literal notranslate"><span class="pre">joblib</span></code> as optional dependency.</p>
+</section>
+<section id="seed-management-for-parallelization">
+<h3>4.2 Seed Management for Parallelization<a class="headerlink" href="#seed-management-for-parallelization" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">generate_independent_seeds</span><span class="p">(</span><span class="n">base_seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate independent seeds for parallel workers using SeedSequence.</span>
+<span class="sd">    </span>
+<span class="sd">    This ensures reproducibility and statistical independence.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">SeedSequence</span><span class="p">(</span><span class="n">base_seed</span><span class="p">)</span>
+    <span class="n">child_seeds</span> <span class="o">=</span> <span class="n">ss</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_paths</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">generate_state</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">child_seeds</span><span class="p">]</span>
+</pre></div>
+</div>
+</section>
+<section id="memory-optimization">
+<h3>4.3 Memory Optimization<a class="headerlink" href="#memory-optimization" title="Link to this heading"></a></h3>
+<p><strong>Streaming Mode</strong>:</p>
+<ul class="simple">
+<li><p>Process paths in chunks</p></li>
+<li><p>Only keep aggregated statistics in memory</p></li>
+<li><p>Support for arbitrary reduction operations</p></li>
+</ul>
+<p><strong>Path Compression</strong>:</p>
+<ul class="simple">
+<li><p>For large state spaces, store indices instead of labels</p></li>
+<li><p>Lazy conversion to labels when needed</p></li>
+</ul>
+</section>
+<section id="batching-strategy">
+<h3>4.4 Batching Strategy<a class="headerlink" href="#batching-strategy" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Optimal batch size calculation</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">optimal_batch_size</span><span class="p">(</span><span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate optimal batch size to minimize overhead.</span>
+<span class="sd">    </span>
+<span class="sd">    - Too small: high communication overhead</span>
+<span class="sd">    - Too large: poor load balancing</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Heuristic: aim for ~100 batches per worker</span>
+    <span class="n">min_batch_size</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">ideal_batches_per_worker</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">batch_size</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">min_batch_size</span><span class="p">,</span> <span class="n">n_paths</span> <span class="o">//</span> <span class="p">(</span><span class="n">n_jobs</span> <span class="o">*</span> <span class="n">ideal_batches_per_worker</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">batch_size</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="variance-reduction-techniques">
+<h2>5. Variance Reduction Techniques<a class="headerlink" href="#variance-reduction-techniques" title="Link to this heading"></a></h2>
+<section id="antithetic-variates">
+<h3>5.1 Antithetic Variates<a class="headerlink" href="#antithetic-variates" title="Link to this heading"></a></h3>
+<p><strong>Concept</strong>: For each random path, generate a “mirror” path using complementary random numbers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Implementation strategy</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_path_with_antithetic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">T</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span> <span class="n">State</span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate a pair of paths using antithetic variates.&quot;&quot;&quot;</span>
+    <span class="c1"># Sample original path with random uniforms U</span>
+    <span class="n">uniforms</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">T</span><span class="p">)</span>
+    <span class="n">path1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_path_from_uniforms</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">uniforms</span><span class="p">)</span>
+    
+    <span class="c1"># Sample antithetic path with 1-U</span>
+    <span class="n">path2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_path_from_uniforms</span><span class="p">(</span><span class="n">T</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">uniforms</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">path1</span><span class="p">,</span> <span class="n">path2</span>
+</pre></div>
+</div>
+<p><strong>Benefit</strong>: Can reduce variance by up to 50% for estimating expectations.</p>
+<p><strong>Applicability</strong>: Works best when estimator is monotonic in random inputs.</p>
+</section>
+<section id="control-variates">
+<h3>5.2 Control Variates<a class="headerlink" href="#control-variates" title="Link to this heading"></a></h3>
+<p><strong>Concept</strong>: Use a correlated variable with known expectation to reduce variance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Example: Using analytical steady-state for control variate</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">estimate_with_control_variate</span><span class="p">(</span>
+    <span class="n">paths</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+    <span class="n">control_mean</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>  <span class="c1"># Known expectation of control</span>
+    <span class="n">estimate_fn</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+    <span class="n">control_fn</span><span class="p">:</span> <span class="n">Callable</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimate with control variate correction.&quot;&quot;&quot;</span>
+    <span class="n">estimates</span> <span class="o">=</span> <span class="p">[</span><span class="n">estimate_fn</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+    <span class="n">controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">control_fn</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">]</span>
+    
+    <span class="c1"># Optimal coefficient</span>
+    <span class="n">cov</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cov</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">controls</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">var_control</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">controls</span><span class="p">)</span>
+    <span class="n">c</span> <span class="o">=</span> <span class="o">-</span><span class="n">cov</span> <span class="o">/</span> <span class="n">var_control</span>
+    
+    <span class="c1"># Corrected estimate</span>
+    <span class="n">corrected</span> <span class="o">=</span> <span class="p">[</span><span class="n">est</span> <span class="o">+</span> <span class="n">c</span> <span class="o">*</span> <span class="p">(</span><span class="n">ctrl</span> <span class="o">-</span> <span class="n">control_mean</span><span class="p">)</span> 
+                 <span class="k">for</span> <span class="n">est</span><span class="p">,</span> <span class="n">ctrl</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">estimates</span><span class="p">,</span> <span class="n">controls</span><span class="p">)]</span>
+    
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">corrected</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Benefit</strong>: Can dramatically reduce variance if good control variate exists.</p>
+<p><strong>Applicability</strong>: Need a correlated variable with known mean (e.g., steady-state distribution).</p>
+</section>
+<section id="importance-sampling">
+<h3>5.3 Importance Sampling<a class="headerlink" href="#importance-sampling" title="Link to this heading"></a></h3>
+<p><strong>Concept</strong>: Sample from alternative distribution, reweight results.</p>
+<p><strong>Status</strong>: Defer to Phase 2 (requires more complex integration).</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="statistical-analysis">
+<h2>6. Statistical Analysis<a class="headerlink" href="#statistical-analysis" title="Link to this heading"></a></h2>
+<section id="confidence-intervals">
+<h3>6.1 Confidence Intervals<a class="headerlink" href="#confidence-intervals" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">MCStatistics</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Statistical summary of Monte Carlo simulation.&quot;&quot;&quot;</span>
+    <span class="n">mean</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">std</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">stderr</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># std / sqrt(n)</span>
+    <span class="n">confidence_interval</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]</span>
+    <span class="n">confidence_level</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">n_paths</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_effective</span><span class="p">:</span> <span class="nb">int</span>  <span class="c1"># after variance reduction</span>
+    <span class="n">variance_reduction_factor</span><span class="p">:</span> <span class="nb">float</span>  <span class="c1"># VRF = var_baseline / var_reduced</span>
+</pre></div>
+</div>
+</section>
+<section id="convergence-diagnostics">
+<h3>6.2 Convergence Diagnostics<a class="headerlink" href="#convergence-diagnostics" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">compute_convergence_diagnostic</span><span class="p">(</span>
+    <span class="n">estimates</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">window_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assess convergence of Monte Carlo estimate.</span>
+<span class="sd">    </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    dict</span>
+<span class="sd">        - rolling_mean: running average</span>
+<span class="sd">        - rolling_std: rolling standard error</span>
+<span class="sd">        - is_converged: bool (based on relative tolerance)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="implementation-plan">
+<h2>7. Implementation Plan<a class="headerlink" href="#implementation-plan" title="Link to this heading"></a></h2>
+<section id="phase-1-core-engine-week-1-2">
+<h3>Phase 1: Core Engine (Week 1-2)<a class="headerlink" href="#phase-1-core-engine-week-1-2" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>✅ Design document (this)</p></li>
+<li><p>Create <code class="docutils literal notranslate"><span class="pre">mc</span></code> module structure</p></li>
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">MonteCarloEngine</span></code> base class</p></li>
+<li><p>Implement basic <code class="docutils literal notranslate"><span class="pre">simulate()</span></code> method</p></li>
+<li><p>Add seed management with <code class="docutils literal notranslate"><span class="pre">SeedSequence</span></code></p></li>
+<li><p>Write unit tests</p></li>
+</ol>
+</section>
+<section id="phase-2-parallelization-week-2-3">
+<h3>Phase 2: Parallelization (Week 2-3)<a class="headerlink" href="#phase-2-parallelization-week-2-3" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">ParallelExecutor</span></code> with <code class="docutils literal notranslate"><span class="pre">concurrent.futures</span></code></p></li>
+<li><p>Add proper seed spawning for workers</p></li>
+<li><p>Implement progress tracking with <code class="docutils literal notranslate"><span class="pre">tqdm</span></code></p></li>
+<li><p>Add batch size optimization</p></li>
+<li><p>Write parallel tests with different n_jobs</p></li>
+<li><p>Benchmark performance</p></li>
+</ol>
+</section>
+<section id="phase-3-variance-reduction-week-3-4">
+<h3>Phase 3: Variance Reduction (Week 3-4)<a class="headerlink" href="#phase-3-variance-reduction-week-3-4" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Implement antithetic variates</p></li>
+<li><p>Implement control variates</p></li>
+<li><p>Add variance reduction factor calculation</p></li>
+<li><p>Write tests for variance reduction effectiveness</p></li>
+<li><p>Document when to use each technique</p></li>
+</ol>
+</section>
+<section id="phase-4-streaming-memory-week-4-5">
+<h3>Phase 4: Streaming &amp; Memory (Week 4-5)<a class="headerlink" href="#phase-4-streaming-memory-week-4-5" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">simulate_streaming()</span></code></p></li>
+<li><p>Add chunk-based processing</p></li>
+<li><p>Support for custom aggregation functions</p></li>
+<li><p>Memory profiling tests</p></li>
+<li><p>Document memory-efficient patterns</p></li>
+</ol>
+</section>
+<section id="phase-5-statistics-analysis-week-5-6">
+<h3>Phase 5: Statistics &amp; Analysis (Week 5-6)<a class="headerlink" href="#phase-5-statistics-analysis-week-5-6" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Implement <code class="docutils literal notranslate"><span class="pre">MCStatistics</span></code> dataclass</p></li>
+<li><p>Add confidence interval calculation</p></li>
+<li><p>Implement convergence diagnostics</p></li>
+<li><p>Add statistical tests (e.g., Kolmogorov-Smirnov)</p></li>
+<li><p>Create visualization helpers</p></li>
+</ol>
+</section>
+<section id="phase-6-documentation-examples-week-6">
+<h3>Phase 6: Documentation &amp; Examples (Week 6)<a class="headerlink" href="#phase-6-documentation-examples-week-6" title="Link to this heading"></a></h3>
+<ol class="arabic simple">
+<li><p>Write comprehensive docstrings</p></li>
+<li><p>Create tutorial notebooks</p></li>
+<li><p>Add to Sphinx docs</p></li>
+<li><p>Performance benchmarks</p></li>
+<li><p>Best practices guide</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="testing-strategy">
+<h2>8. Testing Strategy<a class="headerlink" href="#testing-strategy" title="Link to this heading"></a></h2>
+<section id="pytests">
+<h3>8.1  pytests<a class="headerlink" href="#pytests" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Test each variance reduction technique independently</p></li>
+<li><p>Verify seed reproducibility</p></li>
+<li><p>Test parallel execution with mock processes</p></li>
+<li><p>Test edge cases (n_paths=1, empty paths, etc.)</p></li>
+</ul>
+</section>
+<section id="integration-tests">
+<h3>8.2 Integration Tests<a class="headerlink" href="#integration-tests" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>End-to-end with real processes (MarkovChain, RandomWalk)</p></li>
+<li><p>Compare parallel vs. sequential results</p></li>
+<li><p>Verify variance reduction effectiveness</p></li>
+</ul>
+</section>
+<section id="performance-tests">
+<h3>8.3 Performance Tests<a class="headerlink" href="#performance-tests" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Benchmark parallel speedup (strong scaling)</p></li>
+<li><p>Benchmark memory usage in streaming mode</p></li>
+<li><p>Profile hotspots with <code class="docutils literal notranslate"><span class="pre">cProfile</span></code></p></li>
+</ul>
+</section>
+<section id="statistical-tests">
+<h3>8.4 Statistical Tests<a class="headerlink" href="#statistical-tests" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Verify unbiasedness of estimators</p></li>
+<li><p>Verify confidence interval coverage</p></li>
+<li><p>Test variance reduction claims</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="dependencies">
+<h2>9. Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<section id="required-already-have">
+<h3>Required (Already Have)<a class="headerlink" href="#required-already-have" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">numpy</span></code> - random number generation, array operations</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pandas</span></code> - result storage (optional)</p></li>
+</ul>
+</section>
+<section id="optional-user-choice">
+<h3>Optional (User Choice)<a class="headerlink" href="#optional-user-choice" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">tqdm</span></code> - progress bars (graceful fallback)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">joblib</span></code> - alternative parallelization (optional)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>/<code class="docutils literal notranslate"><span class="pre">plotly</span></code> - visualization (Phase 5)</p></li>
+</ul>
+</section>
+<section id="development">
+<h3>Development<a class="headerlink" href="#development" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pytest</span></code> - testing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pytest-benchmark</span></code> - performance testing</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">memory_profiler</span></code> - memory testing</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="example-usage-patterns">
+<h2>10. Example Usage Patterns<a class="headerlink" href="#example-usage-patterns" title="Link to this heading"></a></h2>
+<section id="pattern-1-quick-parallel-simulation">
+<h3>Pattern 1: Quick Parallel Simulation<a class="headerlink" href="#pattern-1-quick-parallel-simulation" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">MarkovChain</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.mc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonteCarloEngine</span>
+
+<span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">]])</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">MarkovChain</span><span class="p">(</span><span class="n">transition_matrix</span><span class="o">=</span><span class="n">P</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;A&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">])</span>
+
+<span class="c1"># Old way (still works)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">simulate_paths</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># New way (parallel + stats)</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mean: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;95% CI: </span><span class="si">{</span><span class="n">result</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">confidence_interval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-2-variance-reduction">
+<h3>Pattern 2: Variance Reduction<a class="headerlink" href="#pattern-2-variance-reduction" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Standard simulation</span>
+<span class="n">result_standard</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Std Error: </span><span class="si">{</span><span class="n">result_standard</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># With antithetic variates (same accuracy with fewer paths)</span>
+<span class="n">result_antithetic</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>  <span class="c1"># half as many paths</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">variance_reduction</span><span class="o">=</span><span class="s2">&quot;antithetic&quot;</span>
+<span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Std Error: </span><span class="si">{</span><span class="n">result_antithetic</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;VRF: </span><span class="si">{</span><span class="n">result_antithetic</span><span class="o">.</span><span class="n">statistics</span><span class="o">.</span><span class="n">variance_reduction_factor</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">x&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-3-memory-efficient-streaming">
+<h3>Pattern 3: Memory-Efficient Streaming<a class="headerlink" href="#pattern-3-memory-efficient-streaming" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Compute hitting time distribution without storing all paths</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">compute_hitting_time</span><span class="p">(</span><span class="n">paths</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute hitting times for a chunk of paths.&quot;&quot;&quot;</span>
+    <span class="n">times</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">hit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">states</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hit</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hit</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">times</span>
+
+<span class="n">all_hitting_times</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">chunk_result</span> <span class="ow">in</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate_streaming</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">1_000_000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">chunk_size</span><span class="o">=</span><span class="mi">1000</span>
+<span class="p">):</span>
+    <span class="n">hitting_times</span> <span class="o">=</span> <span class="n">compute_hitting_time</span><span class="p">(</span><span class="n">chunk_result</span><span class="o">.</span><span class="n">paths</span><span class="p">)</span>
+    <span class="n">all_hitting_times</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">hitting_times</span><span class="p">)</span>
+
+<span class="c1"># Now analyze</span>
+<span class="n">mean_hitting_time</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">all_hitting_times</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="pattern-4-fluent-api">
+<h3>Pattern 4: Fluent API<a class="headerlink" href="#pattern-4-fluent-api" title="Link to this heading"></a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">result</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">process</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_variance_reduction</span><span class="p">(</span><span class="s2">&quot;antithetic&quot;</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_confidence_level</span><span class="p">(</span><span class="mf">0.99</span><span class="p">)</span>
+    <span class="o">.</span><span class="n">with_progress_bar</span><span class="p">()</span>
+    <span class="o">.</span><span class="n">simulate</span><span class="p">(</span><span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</section>
+</section>
+<hr class="docutils" />
+<section id="performance-targets">
+<h2>11. Performance Targets<a class="headerlink" href="#performance-targets" title="Link to this heading"></a></h2>
+<section id="baseline-current">
+<h3>Baseline (Current)<a class="headerlink" href="#baseline-current" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>1000 paths, T=100, MarkovChain: ~0.1s (sequential)</p></li>
+</ul>
+</section>
+<section id="target-with-optimization">
+<h3>Target (With Optimization)<a class="headerlink" href="#target-with-optimization" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Parallel (8 cores)</strong>: 6-8x speedup → ~0.0125s</p></li>
+<li><p><strong>Antithetic</strong>: 2x variance reduction (50% fewer paths for same accuracy)</p></li>
+<li><p><strong>Streaming</strong>: O(chunk_size) memory instead of O(n_paths)</p></li>
+<li><p><strong>Large Scale</strong>: 1M paths in &lt;30s on 8-core machine</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="future-extensions-phase-7">
+<h2>12. Future Extensions (Phase 7+)<a class="headerlink" href="#future-extensions-phase-7" title="Link to this heading"></a></h2>
+<section id="advanced-variance-reduction">
+<h3>Advanced Variance Reduction<a class="headerlink" href="#advanced-variance-reduction" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Stratified sampling</p></li>
+<li><p>Importance sampling</p></li>
+<li><p>Quasi-Monte Carlo (low-discrepancy sequences)</p></li>
+</ul>
+</section>
+<section id="adaptive-simulation">
+<h3>Adaptive Simulation<a class="headerlink" href="#adaptive-simulation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Stop when target precision reached</p></li>
+<li><p>Sequential sampling with online variance estimation</p></li>
+</ul>
+</section>
+<section id="rare-event-simulation">
+<h3>Rare Event Simulation<a class="headerlink" href="#rare-event-simulation" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>Multilevel splitting</p></li>
+<li><p>Cross-entropy method</p></li>
+</ul>
+</section>
+<section id="gpu-acceleration">
+<h3>GPU Acceleration<a class="headerlink" href="#gpu-acceleration" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>CuPy/JAX for GPU-based simulation</p></li>
+<li><p>Batch matrix operations</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="open-questions-decisions-needed">
+<h2>13. Open Questions &amp; Decisions Needed<a class="headerlink" href="#open-questions-decisions-needed" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>API Style</strong>: Functional (<code class="docutils literal notranslate"><span class="pre">simulate()</span></code>) vs. Fluent (<code class="docutils literal notranslate"><span class="pre">.with_X()</span></code>) vs. Both?</p>
+<ul class="simple">
+<li><p><strong>Recommendation</strong>: Support both, fluent returns new engine instance (immutable)</p></li>
+</ul>
+</li>
+<li><p><strong>Progress Bar Dependency</strong>: Require <code class="docutils literal notranslate"><span class="pre">tqdm</span></code> or make it optional?</p>
+<ul class="simple">
+<li><p><strong>Recommendation</strong>: Optional with graceful fallback to simple print</p></li>
+</ul>
+</li>
+<li><p><strong>Result Object</strong>: Extend <code class="docutils literal notranslate"><span class="pre">SimulationResult</span></code> or create new <code class="docutils literal notranslate"><span class="pre">MCResult</span></code>?</p>
+<ul class="simple">
+<li><p><strong>Recommendation</strong>: Create <code class="docutils literal notranslate"><span class="pre">MCResult</span></code> that inherits from <code class="docutils literal notranslate"><span class="pre">SimulationResult</span></code></p></li>
+</ul>
+</li>
+<li><p><strong>Variance Reduction</strong>: Always calculate VRF or only on request?</p>
+<ul class="simple">
+<li><p><strong>Recommendation</strong>: Only when requested (requires baseline run)</p></li>
+</ul>
+</li>
+<li><p><strong>Parallelization</strong>: Default to sequential or auto-detect optimal n_jobs?</p>
+<ul class="simple">
+<li><p><strong>Recommendation</strong>: Default to sequential, <code class="docutils literal notranslate"><span class="pre">parallel=True</span></code> uses <code class="docutils literal notranslate"><span class="pre">os.cpu_count()</span></code></p></li>
+</ul>
+</li>
+</ol>
+</section>
+<hr class="docutils" />
+<section id="success-metrics">
+<h2>14. Success Metrics<a class="headerlink" href="#success-metrics" title="Link to this heading"></a></h2>
+<section id="code-quality">
+<h3>Code Quality<a class="headerlink" href="#code-quality" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ &gt;90% test coverage</p></li>
+<li><p>✅ Type hints everywhere</p></li>
+<li><p>✅ Docstrings for all public APIs</p></li>
+<li><p>✅ No linter errors</p></li>
+</ul>
+</section>
+<section id="performance">
+<h3>Performance<a class="headerlink" href="#performance" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ 6x speedup on 8-core machine</p></li>
+<li><p>✅ &lt;1.1x memory overhead (vs. sequential)</p></li>
+<li><p>✅ Antithetic achieves &gt;1.5x variance reduction</p></li>
+</ul>
+</section>
+<section id="user-experience">
+<h3>User Experience<a class="headerlink" href="#user-experience" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>✅ Simple cases use &lt;5 lines of code</p></li>
+<li><p>✅ Clear error messages</p></li>
+<li><p>✅ Works with all existing process types</p></li>
+<li><p>✅ Zero breaking changes to existing API</p></li>
+</ul>
+</section>
+</section>
+<hr class="docutils" />
+<section id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
+<p>This design prioritizes:</p>
+<ol class="arabic simple">
+<li><p><strong>Simplicity</strong>: Keep existing API, add power features opt-in</p></li>
+<li><p><strong>Performance</strong>: Smart parallelization with minimal overhead</p></li>
+<li><p><strong>Correctness</strong>: Proper seed management, statistical rigor</p></li>
+<li><p><strong>Flexibility</strong>: Support common patterns without bloat</p></li>
+<li><p><strong>Maintainability</strong>: Clean abstractions, testable components</p></li>
+</ol>
+<p>Next step: Begin Phase 1 implementation with <code class="docutils literal notranslate"><span class="pre">engine.py</span></code> and basic tests.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, stochlab contributors.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

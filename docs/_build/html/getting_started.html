@@ -9,7 +9,7 @@
   <title>Getting Started &mdash; stochlab 0.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=95114af3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=d4f5c460" />
 
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
@@ -44,7 +44,7 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Getting Started:</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a><ul>
@@ -63,12 +63,24 @@
 <li class="toctree-l3"><a class="reference internal" href="#process-interface">Process Interface</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#monte-carlo-simulation">Monte Carlo Simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="quick_reference.html">Quick Reference</a></li>
-<li class="toctree-l1"><a class="reference internal" href="analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guides:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guides/monte_carlo.html">Monte Carlo Simulation Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/analytics.html">Analytics Module</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference:</span></p>
+<ul>
 <li class="toctree-l1"><a class="reference internal" href="api/index.html">API Reference</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Contributing:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="contributing/development_guide.html">stochlab – Developer Guide</a></li>
 </ul>
 
         </div>
@@ -213,12 +225,52 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 </div>
 </section>
 </section>
+<section id="monte-carlo-simulation">
+<h2>Monte Carlo Simulation<a class="headerlink" href="#monte-carlo-simulation" title="Link to this heading"></a></h2>
+<p>For advanced Monte Carlo features including parallel execution and memory optimization:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">stochlab.mc</span><span class="w"> </span><span class="kn">import</span> <span class="n">MonteCarloEngine</span>
+
+<span class="c1"># Create engine</span>
+<span class="n">engine</span> <span class="o">=</span> <span class="n">MonteCarloEngine</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>
+
+<span class="c1"># Simple parallel simulation</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">simulate</span><span class="p">(</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Uses all CPU cores</span>
+    <span class="n">seed</span><span class="o">=</span><span class="mi">42</span>         <span class="c1"># Reproducible</span>
+<span class="p">)</span>
+
+<span class="c1"># Estimate expectations</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">final_state_is_b</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;B&quot;</span> <span class="k">else</span> <span class="mf">0.0</span>
+
+<span class="n">stats</span> <span class="o">=</span> <span class="n">engine</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span>
+    <span class="n">estimator_fn</span><span class="o">=</span><span class="n">final_state_is_b</span><span class="p">,</span>
+    <span class="n">n_paths</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">T</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+    <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;P(X_100 = B) = </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">mean</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> ± </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">stderr</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;95% CI: </span><span class="si">{</span><span class="n">stats</span><span class="o">.</span><span class="n">confidence_interval</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Key Features</strong>:</p>
+<ul class="simple">
+<li><p><strong>6-8x speedup</strong> with parallel execution</p></li>
+<li><p><strong>90-99% memory reduction</strong> with efficient modes</p></li>
+<li><p><strong>Reproducible</strong> results with seed management</p></li>
+<li><p><strong>Progress tracking</strong> for long simulations</p></li>
+</ul>
+<p>See the <a class="reference internal" href="guides/monte_carlo.html"><span class="std std-doc">Monte Carlo Guide</span></a> for complete documentation.</p>
+</section>
 <section id="next-steps">
 <h2>Next Steps<a class="headerlink" href="#next-steps" title="Link to this heading"></a></h2>
 <ol class="arabic simple">
-<li><p><strong>Learn the Architecture</strong>: Read the <a class="reference internal" href="#architecture.md"><span class="xref myst">Architecture Overview</span></a></p></li>
-<li><p><strong>Follow Tutorials</strong>: Work through detailed <a class="reference internal" href="#tutorials/index.rst"><span class="xref myst">Tutorials</span></a></p></li>
-<li><p><strong>Explore Examples</strong>: See real-world <a class="reference internal" href="#examples/index.rst"><span class="xref myst">Examples</span></a></p></li>
+<li><p><strong>Monte Carlo Simulation</strong>: Learn about <a class="reference internal" href="guides/monte_carlo.html"><span class="std std-doc">high-performance parallel simulation</span></a></p></li>
+<li><p><strong>Analytics</strong>: Explore <a class="reference internal" href="guides/analytics.html"><span class="std std-doc">Markov chain analytics</span></a> for computing stationary distributions and more</p></li>
+<li><p><strong>Quick Reference</strong>: See the <a class="reference internal" href="quick_reference.html"><span class="std std-doc">quick reference</span></a> for common operations</p></li>
 <li><p><strong>API Reference</strong>: Browse the complete <a class="reference internal" href="api/index.html"><span class="std std-doc">API Documentation</span></a></p></li>
 </ol>
 </section>
