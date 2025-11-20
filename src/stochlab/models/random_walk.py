@@ -43,10 +43,10 @@ class RandomWalk(StochasticProcess):
         rng = kwargs.pop("rng", None)
         if rng is None:
             rng = np.random.default_rng()
-        
+
         if kwargs:
             raise TypeError(f"Unused keyword arguments: {list(kwargs.keys())}")
-        
+
         if x0 is None:
             # State space contains ints, convert to list for np.random.choice
             states_list = list(self._state_space.states)
@@ -61,11 +61,13 @@ class RandomWalk(StochasticProcess):
             try:
                 x0 = int(x0)  # type: ignore[call-overload]
             except (ValueError, TypeError) as e:
-                raise TypeError(f"x0 must be convertible to int, got {type(x0).__name__}: {e}") from e
-        
+                raise TypeError(
+                    f"x0 must be convertible to int, got {type(x0).__name__}: {e}"
+                ) from e
+
         if x0 not in self._state_space:
             raise ValueError(f"x0={x0} not in state space")
-        
+
         current = x0
 
         states = np.empty(T + 1, dtype=int)
