@@ -7,8 +7,10 @@ from stochlab.models import MM1Queue
 
 
 def test_mm1_queue_generates_path():
-    queue = MM1Queue(arrival_rate=2.0, service_rate=3.0, max_queue_length=10)
-    path = queue.sample_path(T=100, x0=2)
+    queue = MM1Queue(arrival_rate=2.0, service_rate=3.0, max_queue_length=20)
+    # Use a seed to make test deterministic and avoid queue overflow
+    rng = np.random.default_rng(42)
+    path = queue.sample_path(T=100, x0=2, rng=rng)
 
     assert len(path) == 101
     assert path.times[0] == pytest.approx(0.0)

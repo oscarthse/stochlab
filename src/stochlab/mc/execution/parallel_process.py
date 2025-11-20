@@ -267,7 +267,7 @@ class ProcessPoolParallelExecutor(ParallelExecutor):
             # Optional progress bar
             if show_progress:
                 try:
-                    from tqdm import tqdm
+                    from tqdm import tqdm  # type: ignore[import-untyped]
 
                     iterator = tqdm(
                         iterator,
@@ -379,7 +379,7 @@ class ProcessPoolParallelExecutor(ParallelExecutor):
 
             if show_progress:
                 try:
-                    from tqdm import tqdm
+                    from tqdm import tqdm  # type: ignore[import-untyped]
 
                     iterator = tqdm(
                         iterator,

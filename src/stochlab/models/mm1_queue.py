@@ -73,7 +73,10 @@ class MM1Queue(StochasticProcess):
                     f"x0={x0} not in queue state space "
                     f"[0, {self.max_queue_length}]."
                 )
-            queue_length = int(x0)
+            # x0 is validated to be in state_space, which contains ints
+            if not isinstance(x0, int):
+                raise TypeError(f"x0 must be an int, got {type(x0).__name__}")
+            queue_length = x0
 
         states = np.empty(T + 1, dtype=int)
         times = np.empty(T + 1, dtype=float)

@@ -212,7 +212,7 @@ class MonteCarloEngine:
         iterator = range(n_paths)
         if show_progress:
             try:
-                from tqdm import tqdm
+                from tqdm import tqdm  # type: ignore[import-untyped]
 
                 iterator = tqdm(iterator, desc="Simulating", unit="path")
             except ImportError:
@@ -327,7 +327,7 @@ class MonteCarloEngine:
         }
 
         if mode == ReturnMode.STATS and merged.partial_stats:
-            metadata["statistics"] = merged.partial_stats
+            metadata["statistics"] = merged.partial_stats  # type: ignore[assignment]
 
         return SimulationResult(paths=paths, metadata=metadata)
 
@@ -409,7 +409,7 @@ class MonteCarloEngine:
 
         # Confidence interval (assume normal)
         try:
-            from scipy import stats as sp_stats
+            from scipy import stats as sp_stats  # type: ignore[import-untyped]
 
             z_score = sp_stats.norm.ppf(1 - (1 - confidence_level) / 2)
         except ImportError:

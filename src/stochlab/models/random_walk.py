@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any, Hashable
+
 import numpy as np
 
 from stochlab.core import Path, StateSpace, StochasticProcess
@@ -36,14 +38,20 @@ class RandomWalk(StochasticProcess):
     def state_space(self) -> StateSpace:
         return self._state_space
 
-    def sample_path(self, T: int, x0: int | None = None, **kwargs) -> Path:
+    def sample_path(self, T: int, x0: Hashable | None = None, **kwargs: Any) -> Path:
         if x0 is None:
-            x0 = np.random.choice(self._state_space.states)
+            # State space contains ints, convert to list for np.random.choice
+            states_list = list(self._state_space.states)
+            x0 = np.random.choice(states_list)  # type: ignore[arg-type]
         if x0 not in self._state_space:
             raise ValueError(f"x0={x0} not in state space")
+        # x0 is validated to be in state_space, which contains ints
+        if not isinstance(x0, int):
+            raise TypeError(f"x0 must be an int, got {type(x0).__name__}")
+        current = int(x0)
 
         states = np.empty(T + 1, dtype=int)
-        states[0] = x0
+        states[0] = current
 
         for t in range(T):
             x = states[t]
